@@ -102,7 +102,9 @@ const handleRegisterAndUpload = async () => {
     localStorage.setItem('jwt_token', tokenToUse);
 
     statusMsg.value = '✅ ¡Cuenta y Datos listos! Entrando...';
-    setTimeout(() => router.push('/dashboard'), 1500);
+    setTimeout(() => {
+      router.push({ path: '/dashboard', query: { welcome: 'true' } });
+    }, 1500);
 
   } catch (error: any) {
     console.error(error);

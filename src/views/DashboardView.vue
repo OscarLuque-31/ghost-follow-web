@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import api from '@/services/api';
-import { useRouter } from 'vue-router';
 
 interface Stats {
   totalFollowers: number;
@@ -21,7 +21,10 @@ const messageType = ref<'success' | 'error' | ''>('');
 const isLoading = ref(false);
 const isDragging = ref(false);
 const router = useRouter();
+const route = useRoute();
 const fileInput = ref<HTMLInputElement | null>(null);
+
+const isFirstTime = computed(() => route.query.welcome === 'true');
 
 const triggerFileInput = () => {
   fileInput.value?.click();
@@ -237,9 +240,23 @@ const logout = () => {
           </div>
         </div>
 
-        <div v-if="analysisResults?.stats.gainedCount === 0 && analysisResults?.stats.lostCount === 0" class="info-box">
-          <p>👋 <strong>¡Primera vez por aquí!</strong><br>
-            Hemos guardado tu lista base. Vuelve a subir el archivo en unos días para ver quién te ha dejado de seguir.
+        <div v-if="isFirstTime" class="info-box welcome-box fade-in">
+          <h3>🎉 ¡Bienvenido a GhostFollow!</h3>
+          <p>
+            Hemos guardado tu lista actual como <strong>Línea Base</strong>.
+            <br>
+            A partir de ahora, cada vez que subas un archivo, lo compararemos con esta lista para decirte quién te deja
+            de seguir.
+          </p>
+        </div>
+
+        <div v-else-if="analysisResults?.stats.gainedCount === 0 && analysisResults?.stats.lostCount === 0"
+          class="info-box clean-box fade-in">
+          <h3>😴 Todo tranquilo por aquí</h3>
+          <p>
+            No hay cambios respecto a tu último análisis.
+            <br>
+            Nadie nuevo te ha seguido y, lo más importante, <strong>¡nadie te ha dejado de seguir!</strong>
           </p>
         </div>
 
@@ -647,15 +664,39 @@ const logout = () => {
   color: #10b981;
 }
 
+/* ESTILOS NUEVOS PARA CAJAS DE MENSAJES */
 .info-box {
-  background: #eff6ff;
-  border: 1px solid #dbeafe;
-  color: #1e40af;
-  padding: 1.5rem;
-  border-radius: 12px;
+  padding: 20px;
+  border-radius: 16px;
   text-align: center;
+  margin: 20px 0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.info-box h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+}
+
+.info-box p {
+  margin: 0;
   font-size: 0.95rem;
   line-height: 1.5;
+}
+
+/* Caja de Bienvenida (Azul/Fiesta) */
+.welcome-box {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border: 1px solid #90caf9;
+  color: #0d47a1;
+}
+
+/* Caja de Sin Cambios (Verde/Relax) */
+.clean-box {
+  background: linear-gradient(135deg, #f1f8e9 0%, #dcedc8 100%);
+  border: 1px solid #c5e1a5;
+  color: #33691e;
 }
 
 .lists-container {
