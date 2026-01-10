@@ -12,6 +12,9 @@ const statusMsg = ref('');
 const isError = ref(false);
 const router = useRouter();
 
+const isUserCreated = ref(false);
+const tempToken = ref('');
+
 const passwordRules = computed(() => {
   const pwd = password.value;
   return {
@@ -32,13 +35,29 @@ const handleFileUpload = (event: Event) => {
   if (target.files && target.files.length > 0) file.value = target.files[0] || null;
 };
 
+const uploadFileProcess = async (token: string) => {
+  statusMsg.value = 'Usuario creado. Subiendo archivo...';
+
+  const formData = new FormData();
+  if (file.value) {
+    formData.append('file', file.value);
+  }
+
+  await api.post('/followers/upload', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+      'Authorization': `Bearer ${token}`
+    },
+    params: { accountName: accountName.value }
+  });
+};
+
 const handleRegisterAndUpload = async () => {
-  if (!isPasswordValid.value) {
+  if (!isUserCreated.value && !isPasswordValid.value) {
     statusMsg.value = "⚠️ La contraseña no es segura.";
     isError.value = true;
     return;
   }
-
   if (!file.value) {
     statusMsg.value = "⚠️ Falta el archivo JSON.";
     isError.value = true;
@@ -46,46 +65,58 @@ const handleRegisterAndUpload = async () => {
   }
 
   isLoading.value = true;
-  statusMsg.value = 'Creando cuenta...';
   isError.value = false;
 
   try {
-    const registerResponse = await api.post('/auth/register', {
-      email: email.value,
-      password: password.value
-    });
-    localStorage.setItem('jwt_token', registerResponse.data.access_token);
+    let tokenToUse = tempToken.value;
 
-    statusMsg.value = 'Subiendo archivo...';
-    const formData = new FormData();
-    formData.append('file', file.value);
-    await api.post('/followers/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-      params: { accountName: accountName.value }
-    });
+    if (!isUserCreated.value) {
+      statusMsg.value = 'Creando cuenta...';
+      const registerResponse = await api.post('/auth/register', {
+        email: email.value,
+        password: password.value
+      });
 
-    statusMsg.value = '✅ ¡Listo! Redirigiendo...';
+      tokenToUse = registerResponse.data.access_token;
+      isUserCreated.value = true;
+      tempToken.value = tokenToUse;
+    }
+
+    await uploadFileProcess(tokenToUse);
+
+    localStorage.setItem('jwt_token', tokenToUse);
+
+    statusMsg.value = '✅ ¡Cuenta y Datos listos! Entrando...';
     setTimeout(() => router.push('/dashboard'), 1500);
+
   } catch (error: any) {
+    console.error(error);
     isError.value = true;
-    statusMsg.value = !localStorage.getItem('jwt_token') ? '❌ Error en registro' : '⚠️ Falló subida, entrando...';
-    if (localStorage.getItem('jwt_token')) setTimeout(() => router.push('/dashboard'), 3000);
-  } finally {
     isLoading.value = false;
+
+    if (isUserCreated.value) {
+      statusMsg.value = '⚠️ El usuario se creó, pero falló la subida. Reintenta subir el archivo.';
+    } else {
+      statusMsg.value = '❌ Error al crear el usuario. Inténtalo de nuevo.';
+    }
+  } finally {
+    if (!isError.value) {
+      isLoading.value = true;
+    } else {
+      isLoading.value = false;
+    }
   }
 };
 </script>
 
 <template>
   <div class="page-root">
-
     <div class="fixed-background">
       <div class="blob blob-1"></div>
       <div class="blob blob-2"></div>
     </div>
 
     <div class="scrollable-content">
-
       <div class="glass-card fade-in-up">
         <router-link to="/" class="back-link">
           <span class="arrow">←</span> Inicio
@@ -98,40 +129,47 @@ const handleRegisterAndUpload = async () => {
 
         <form @submit.prevent="handleRegisterAndUpload">
 
-          <div class="row">
+          <div v-if="!isUserCreated">
+            <div class="row">
+              <div class="input-wrapper">
+                <span class="icon">👤</span>
+                <input v-model="accountName" type="text" placeholder="Usuario IG" required class="styled-input" />
+              </div>
+            </div>
+
             <div class="input-wrapper">
-              <span class="icon">👤</span>
-              <input v-model="accountName" type="text" placeholder="Usuario IG" required class="styled-input" />
+              <span class="icon">✉️</span>
+              <input v-model="email" type="email" placeholder="Correo Electrónico" required class="styled-input" />
+            </div>
+
+            <div class="input-wrapper">
+              <span class="icon">🔒</span>
+              <input v-model="password" type="password" placeholder="Contraseña" class="styled-input"
+                :class="{ 'input-error': password && !isPasswordValid }" />
+            </div>
+
+            <div v-if="password" class="password-checklist fade-in">
+              <p class="requirements-title">Requisitos de seguridad:</p>
+              <ul>
+                <li :class="{ 'met': passwordRules.length }">
+                  <span class="check-icon">{{ passwordRules.length ? '✅' : '○' }}</span> Mín. 8 caracteres
+                </li>
+                <li :class="{ 'met': passwordRules.uppercase }">
+                  <span class="check-icon">{{ passwordRules.uppercase ? '✅' : '○' }}</span> Una mayúscula
+                </li>
+                <li :class="{ 'met': passwordRules.number }">
+                  <span class="check-icon">{{ passwordRules.number ? '✅' : '○' }}</span> Un número
+                </li>
+                <li :class="{ 'met': passwordRules.special }">
+                  <span class="check-icon">{{ passwordRules.special ? '✅' : '○' }}</span> Símbolo (@$!%*?&._-)
+                </li>
+              </ul>
             </div>
           </div>
 
-          <div class="input-wrapper">
-            <span class="icon">✉️</span>
-            <input v-model="email" type="email" placeholder="Correo Electrónico" required class="styled-input" />
-          </div>
-
-          <div class="input-wrapper">
-            <span class="icon">🔒</span>
-            <input v-model="password" type="password" placeholder="Contraseña" class="styled-input"
-              :class="{ 'input-error': password && !isPasswordValid }" />
-          </div>
-
-          <div v-if="password" class="password-checklist fade-in">
-            <p class="requirements-title">Requisitos de seguridad:</p>
-            <ul>
-              <li :class="{ 'met': passwordRules.length }">
-                <span class="check-icon">{{ passwordRules.length ? '✅' : '○' }}</span> Mín. 8 caracteres
-              </li>
-              <li :class="{ 'met': passwordRules.uppercase }">
-                <span class="check-icon">{{ passwordRules.uppercase ? '✅' : '○' }}</span> Una mayúscula
-              </li>
-              <li :class="{ 'met': passwordRules.number }">
-                <span class="check-icon">{{ passwordRules.number ? '✅' : '○' }}</span> Un número
-              </li>
-              <li :class="{ 'met': passwordRules.special }">
-                <span class="check-icon">{{ passwordRules.special ? '✅' : '○' }}</span> Símbolo (@$!%*?&._-)
-              </li>
-            </ul>
+          <div v-else class="retry-message">
+            <p>👤 Usuario creado: <strong>{{ email }}</strong></p>
+            <p>Falta subir el archivo para terminar.</p>
           </div>
 
           <div class="file-area">
@@ -140,8 +178,8 @@ const handleRegisterAndUpload = async () => {
             <input type="file" @change="handleFileUpload" accept=".json" class="file-input" required />
           </div>
 
-          <button type="submit" class="btn-primary" :disabled="isLoading || !isPasswordValid">
-            {{ isLoading ? 'Procesando...' : 'Empezar Análisis' }}
+          <button type="submit" class="btn-primary" :disabled="isLoading || (!isUserCreated && !isPasswordValid)">
+            {{ isLoading ? 'Procesando...' : (isUserCreated ? 'Reintentar Subida' : 'Crear y Subir') }}
           </button>
         </form>
 
@@ -154,7 +192,6 @@ const handleRegisterAndUpload = async () => {
           <router-link to="/login" class="login-link">Inicia sesión</router-link>
         </div>
       </div>
-
     </div>
   </div>
 </template>
@@ -416,7 +453,6 @@ h1 {
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
   transition: background 0.3s;
 }
 
@@ -515,6 +551,14 @@ h1 {
 
 .login-link:hover {
   text-decoration: underline;
+}
+
+.retry-message {
+  background: rgba(255, 255, 255, 0.6);
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  color: #880e4f;
 }
 
 @media (max-width: 480px) {
