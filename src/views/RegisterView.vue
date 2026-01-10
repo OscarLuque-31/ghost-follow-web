@@ -36,16 +36,24 @@ const handleFileUpload = (event: Event) => {
 };
 
 const uploadFileProcess = async (token: string) => {
-  statusMsg.value = 'Usuario creado. Subiendo archivo...';
+  statusMsg.value = 'Usuario creado. Leyendo archivo JSON...';
 
-  const formData = new FormData();
-  if (file.value) {
-    formData.append('file', file.value);
+  if (!file.value) throw new Error("No hay archivo seleccionado");
+
+  const fileContent = await file.value.text();
+  let jsonData;
+
+  try {
+    jsonData = JSON.parse(fileContent);
+  } catch (e) {
+    throw new Error("El archivo no es un JSON válido.");
   }
 
-  await api.post('/followers/upload', formData, {
+  statusMsg.value = 'Enviando datos...';
+
+  await api.post('/followers/upload', jsonData, {
     headers: {
-      'Content-Type': 'multipart/form-data',
+      'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
     },
     params: { accountName: accountName.value }
@@ -77,7 +85,14 @@ const handleRegisterAndUpload = async () => {
         password: password.value
       });
 
+      console.log('Respuesta Registro:', registerResponse.data);
+
       tokenToUse = registerResponse.data.token;
+
+      if (!tokenToUse) {
+        throw new Error("El backend no devolvió un token válido.");
+      }
+
       isUserCreated.value = true;
       tempToken.value = tokenToUse;
     }
@@ -95,9 +110,9 @@ const handleRegisterAndUpload = async () => {
     isLoading.value = false;
 
     if (isUserCreated.value) {
-      statusMsg.value = '⚠️ El usuario se creó, pero falló la subida. Reintenta subir el archivo.';
+      statusMsg.value = '⚠️ Usuario creado, pero falló el envío del JSON. Reintenta subir el archivo.';
     } else {
-      statusMsg.value = '❌ Error al crear el usuario. Inténtalo de nuevo.';
+      statusMsg.value = error.response?.data?.message || '❌ Error al crear el usuario.';
     }
   } finally {
     if (!isError.value) {
@@ -169,7 +184,7 @@ const handleRegisterAndUpload = async () => {
 
           <div v-else class="retry-message">
             <p>👤 Usuario creado: <strong>{{ email }}</strong></p>
-            <p>Falta subir el archivo para terminar.</p>
+            <p>Falta enviar los datos para terminar.</p>
           </div>
 
           <div class="file-area">
@@ -179,7 +194,7 @@ const handleRegisterAndUpload = async () => {
           </div>
 
           <button type="submit" class="btn-primary" :disabled="isLoading || (!isUserCreated && !isPasswordValid)">
-            {{ isLoading ? 'Procesando...' : (isUserCreated ? 'Reintentar Subida' : 'Crear y Subir') }}
+            {{ isLoading ? 'Procesando...' : (isUserCreated ? 'Reintentar Envío' : 'Crear y Analizar') }}
           </button>
         </form>
 
