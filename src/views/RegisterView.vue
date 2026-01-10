@@ -77,7 +77,7 @@ const handleRegisterAndUpload = async () => {
         password: password.value
       });
 
-      tokenToUse = registerResponse.data.access_token;
+      tokenToUse = registerResponse.data.token;
       isUserCreated.value = true;
       tempToken.value = tokenToUse;
     }
