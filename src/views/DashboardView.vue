@@ -3,17 +3,8 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import api from '@/services/api';
 
-interface Stats {
-  totalFollowers: number;
-  gainedCount: number;
-  lostCount: number;
-}
-
-interface AnalysisResult {
-  stats: Stats;
-  newFollowers: string[];
-  lostFollowers: string[];
-}
+interface Stats { totalFollowers: number; gainedCount: number; lostCount: number; }
+interface AnalysisResult { stats: Stats; newFollowers: string[]; lostFollowers: string[]; }
 
 const file = ref<File | null>(null);
 const message = ref('');
@@ -26,10 +17,7 @@ const fileInput = ref<HTMLInputElement | null>(null);
 
 const isFirstTime = computed(() => route.query.welcome === 'true');
 
-const triggerFileInput = () => {
-  fileInput.value?.click();
-};
-
+const triggerFileInput = () => fileInput.value?.click();
 const currentAccountName = ref('');
 const analysisResults = ref<AnalysisResult | null>(null);
 const showResults = ref(false);
@@ -56,25 +44,17 @@ const formatFileSize = (bytes: number) => {
 const handleFileSelect = (event: Event) => {
   const target = event.target as HTMLInputElement;
   const selectedFile = target.files?.[0];
-
-  if (selectedFile) {
-    processFile(selectedFile);
-  }
+  if (selectedFile) processFile(selectedFile);
   target.value = '';
 };
 
 const onDragOver = (e: DragEvent) => { e.preventDefault(); isDragging.value = true; };
 const onDragLeave = (e: DragEvent) => { e.preventDefault(); isDragging.value = false; };
-
 const onDrop = (e: DragEvent) => {
   e.preventDefault();
   isDragging.value = false;
-
   const droppedFile = e.dataTransfer?.files?.[0];
-
-  if (droppedFile) {
-    processFile(droppedFile);
-  }
+  if (droppedFile) processFile(droppedFile);
 };
 
 const processFile = (selectedFile: File) => {
@@ -95,45 +75,36 @@ const removeFile = () => {
 
 const uploadData = async () => {
   if (!file.value) return;
-
   if (!currentAccountName.value) {
-    message.value = '⚠️ Error identificando tu cuenta. Recarga la página.';
+    message.value = '⚠️ Error identificando cuenta. Recarga.';
     messageType.value = 'error';
     return;
   }
-
   isLoading.value = true;
   message.value = '';
 
   try {
     const fileContent = await file.value.text();
     let jsonData;
-    try {
-      jsonData = JSON.parse(fileContent);
-    } catch (e) {
-      throw new Error("El archivo no es un JSON válido.");
-    }
-
-    if (!Array.isArray(jsonData)) {
-      throw new Error("El formato del JSON es incorrecto (debe ser una lista []).");
-    }
+    try { jsonData = JSON.parse(fileContent); } catch (e) { throw new Error("JSON inválido."); }
+    if (!Array.isArray(jsonData)) throw new Error("Formato incorrecto (debe ser lista []).");
 
     const response = await api.post('/followers/upload', jsonData, {
-      params: {
-        accountName: currentAccountName.value
-      }
+      params: { accountName: currentAccountName.value }
     });
 
     analysisResults.value = response.data;
     showResults.value = true;
-
     file.value = null;
     message.value = '';
 
+    if (isFirstTime.value) {
+      router.replace({ query: {} });
+    }
+
   } catch (error: any) {
-    message.value = error.message || '❌ Error al procesar los datos.';
+    message.value = error.message || '❌ Error al procesar.';
     messageType.value = 'error';
-    console.error(error);
   } finally {
     isLoading.value = false;
   }
@@ -154,7 +125,6 @@ const logout = () => {
       </div>
       <div class="user-actions">
         <span class="user-badge">{{ currentAccountName || 'Cargando...' }}</span>
-
         <button @click="logout" class="btn-icon-logout" title="Cerrar Sesión">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -168,6 +138,16 @@ const logout = () => {
 
     <main class="main-content">
 
+      <div v-if="isFirstTime" class="info-box welcome-box fade-in" style="max-width: 550px; margin-bottom: 25px;">
+        <h3>🎉 ¡Bienvenido a GhostFollow!</h3>
+        <p>
+          Acabamos de guardar tu lista actual como <strong>Línea Base</strong>.
+          <br>
+          La próxima vez que subas un archivo (en unos días), lo compararemos con esta versión para decirte quién te ha
+          dejado de seguir.
+        </p>
+      </div>
+
       <div v-if="!showResults" class="card-upload fade-in">
         <div class="card-header">
           <h2>Analizador</h2>
@@ -177,9 +157,7 @@ const logout = () => {
         <div class="upload-area">
           <div v-if="!file" class="drop-zone" :class="{ 'active': isDragging }" @dragover="onDragOver"
             @dragleave="onDragLeave" @drop="onDrop" @click="triggerFileInput">
-
             <input type="file" ref="fileInput" class="hidden-input" accept=".json" @change="handleFileSelect" />
-
             <div class="icon-cloud">
               <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -188,8 +166,8 @@ const logout = () => {
                 <line x1="12" y1="3" x2="12" y2="15"></line>
               </svg>
             </div>
-            <p class="drop-text">Arrastra tu archivo <span>followers_1.json</span> aquí</p>
-            <span class="browse-btn">o haz clic para buscar</span>
+            <p class="drop-text">Arrastra <span>followers_1.json</span> aquí</p>
+            <span class="browse-btn">o clic para buscar</span>
           </div>
 
           <div v-else class="file-preview">
@@ -200,7 +178,7 @@ const logout = () => {
                 <span class="file-size">{{ formatFileSize(file.size) }}</span>
               </div>
             </div>
-            <button @click="removeFile" class="btn-remove" title="Quitar archivo">✕</button>
+            <button @click="removeFile" class="btn-remove">✕</button>
           </div>
         </div>
 
@@ -211,57 +189,35 @@ const logout = () => {
         </button>
 
         <transition name="fade">
-          <div v-if="message" class="status-message" :class="messageType">
-            {{ message }}
-          </div>
+          <div v-if="message" class="status-message" :class="messageType">{{ message }}</div>
         </transition>
       </div>
 
       <div v-else class="results-dashboard fade-in">
-
-        <button @click="showResults = false" class="btn-back">
-          ← Analizar otro archivo
-        </button>
+        <button @click="showResults = false" class="btn-back">← Analizar otro archivo</button>
 
         <div class="stats-grid">
           <div class="stat-card">
             <h3>Total Seguidores</h3>
             <span class="number">{{ analysisResults?.stats.totalFollowers }}</span>
           </div>
-
           <div class="stat-card green-card">
             <h3>Nuevos</h3>
             <span class="number">+{{ analysisResults?.stats.gainedCount }}</span>
           </div>
-
           <div class="stat-card red-card">
             <h3>Han dejado de seguirte</h3>
             <span class="number">-{{ analysisResults?.stats.lostCount }}</span>
           </div>
         </div>
 
-        <div v-if="isFirstTime" class="info-box welcome-box fade-in">
-          <h3>🎉 ¡Bienvenido a GhostFollow!</h3>
-          <p>
-            Hemos guardado tu lista actual como <strong>Línea Base</strong>.
-            <br>
-            A partir de ahora, cada vez que subas un archivo, lo compararemos con esta lista para decirte quién te deja
-            de seguir.
-          </p>
-        </div>
-
-        <div v-else-if="analysisResults?.stats.gainedCount === 0 && analysisResults?.stats.lostCount === 0"
+        <div v-if="!isFirstTime && analysisResults?.stats.gainedCount === 0 && analysisResults?.stats.lostCount === 0"
           class="info-box clean-box fade-in">
-          <h3>😴 Todo tranquilo por aquí</h3>
-          <p>
-            No hay cambios respecto a tu último análisis.
-            <br>
-            Nadie nuevo te ha seguido y, lo más importante, <strong>¡nadie te ha dejado de seguir!</strong>
-          </p>
+          <h3>😴 Todo tranquilo</h3>
+          <p>No hay cambios respecto a tu último análisis.</p>
         </div>
 
         <div class="lists-container">
-
           <div v-if="analysisResults?.lostFollowers && analysisResults?.lostFollowers.length > 0" class="list-column">
             <h3 class="list-title text-red">📉 Han dejado de seguirte</h3>
             <ul class="user-list">
@@ -281,7 +237,6 @@ const logout = () => {
               </li>
             </ul>
           </div>
-
         </div>
       </div>
 
@@ -290,24 +245,21 @@ const logout = () => {
 </template>
 
 <style scoped>
+/* ... (Tus estilos anteriores se mantienen igual, solo asegúrate de tener estos nuevos) ... */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
   --primary: #e91e63;
   --primary-hover: #c2185b;
   --bg-color: #f8f9fa;
-  --surface: #ffffff;
   --text-main: #2c3e50;
-  --text-muted: #64748b;
-  --border: #e2e8f0;
 }
 
 .dashboard-container {
   font-family: 'Inter', sans-serif;
   min-height: 100vh;
   background-color: #fdf2f8;
-  background-image: radial-gradient(at 0% 0%, hsla(334, 97%, 92%, 1) 0, transparent 50%),
-    radial-gradient(at 100% 100%, hsla(265, 100%, 93%, 1) 0, transparent 50%);
+  background-image: radial-gradient(at 0% 0%, hsla(334, 97%, 92%, 1) 0, transparent 50%), radial-gradient(at 100% 100%, hsla(265, 100%, 93%, 1) 0, transparent 50%);
   color: var(--text-main);
   display: flex;
   flex-direction: column;
@@ -366,11 +318,9 @@ const logout = () => {
   padding: 6px 12px;
   border-radius: 20px;
   max-width: 200px;
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  display: inline-block;
-  vertical-align: middle;
+  white-space: nowrap;
 }
 
 .btn-icon-logout {
@@ -407,7 +357,7 @@ const logout = () => {
   max-width: 550px;
   border-radius: 24px;
   padding: 2.5rem;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.01);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
   text-align: center;
   border: 1px solid white;
 }
@@ -664,7 +614,6 @@ const logout = () => {
   color: #10b981;
 }
 
-/* ESTILOS NUEVOS PARA CAJAS DE MENSAJES */
 .info-box {
   padding: 20px;
   border-radius: 16px;
@@ -685,14 +634,12 @@ const logout = () => {
   line-height: 1.5;
 }
 
-/* Caja de Bienvenida (Azul/Fiesta) */
 .welcome-box {
   background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
   border: 1px solid #90caf9;
   color: #0d47a1;
 }
 
-/* Caja de Sin Cambios (Verde/Relax) */
 .clean-box {
   background: linear-gradient(135deg, #f1f8e9 0%, #dcedc8 100%);
   border: 1px solid #c5e1a5;
