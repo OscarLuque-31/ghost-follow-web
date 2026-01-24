@@ -14,6 +14,10 @@ interface AnalysisResult {
   lostFollowers: string[]
 }
 
+const ITEMS_PER_PAGE = 50
+const limitNew = ref(ITEMS_PER_PAGE)
+const limitLost = ref(ITEMS_PER_PAGE)
+
 const file = ref<File | null>(null)
 const message = ref('')
 const messageType = ref<'success' | 'error' | ''>('')
@@ -29,6 +33,22 @@ const triggerFileInput = () => fileInput.value?.click()
 const currentAccountName = ref('')
 const analysisResults = ref<AnalysisResult | null>(null)
 const showResults = ref(false)
+
+const displayedNewFollowers = computed(() => {
+  return analysisResults.value?.newFollowers.slice(0, limitNew.value) || []
+})
+
+const displayedLostFollowers = computed(() => {
+  return analysisResults.value?.lostFollowers.slice(0, limitLost.value) || []
+})
+
+const loadMoreNew = () => {
+  limitNew.value += ITEMS_PER_PAGE
+}
+
+const loadMoreLost = () => {
+  limitLost.value += ITEMS_PER_PAGE
+}
 
 onMounted(async () => {
   if (route.query.welcome) {
@@ -83,6 +103,16 @@ const processFile = (selectedFile: File) => {
     messageType.value = 'error'
     return
   }
+
+  const MAX_SIZE_MB = 15
+  if (selectedFile.size > MAX_SIZE_MB * 1024 * 1024) {
+    message.value = `⚠️ El archivo es demasiado grande (${formatFileSize(selectedFile.size)}).
+    Parece que has descargado fotos/vídeos.
+    Por favor, vuelve a Instagram y selecciona SOLO "Seguidores y seguidos".`
+    messageType.value = 'error'
+    return
+  }
+
   file.value = selectedFile
   message.value = ''
   messageType.value = ''
@@ -117,6 +147,10 @@ const uploadData = async () => {
 
     analysisResults.value = response.data
     showResults.value = true
+
+    limitNew.value = ITEMS_PER_PAGE
+    limitLost.value = ITEMS_PER_PAGE
+
     file.value = null
     message.value = ''
   } catch (error: any) {
@@ -246,23 +280,39 @@ const logout = () => {
 
         <div class="lists-container">
           <div v-if="analysisResults?.lostFollowers && analysisResults?.lostFollowers.length > 0" class="list-column">
-            <h3 class="list-title text-red">📉 Han dejado de seguirte</h3>
+            <h3 class="list-title text-red">
+              📉 Han dejado de seguirte
+              <span class="count-badge">{{ analysisResults.stats.lostCount }}</span>
+            </h3>
             <ul class="user-list">
-              <li v-for="user in analysisResults?.lostFollowers" :key="user" class="user-item">
+              <li v-for="user in displayedLostFollowers" :key="user" class="user-item">
                 <span class="username">@{{ user }}</span>
                 <a :href="`https://instagram.com/${user}`" target="_blank" class="btn-action btn-red">Ver</a>
               </li>
             </ul>
+            <div v-if="analysisResults.lostFollowers.length > limitLost" class="load-more-container">
+              <button @click="loadMoreLost" class="btn-load-more">
+                Ver más ({{ analysisResults.lostFollowers.length - limitLost }} restantes)
+              </button>
+            </div>
           </div>
 
           <div v-if="analysisResults?.newFollowers && analysisResults?.newFollowers.length > 0" class="list-column">
-            <h3 class="list-title text-green">✨ Nuevos seguidores</h3>
+            <h3 class="list-title text-green">
+              ✨ Nuevos seguidores
+              <span class="count-badge">{{ analysisResults.stats.gainedCount }}</span>
+            </h3>
             <ul class="user-list">
-              <li v-for="user in analysisResults?.newFollowers" :key="user" class="user-item">
+              <li v-for="user in displayedNewFollowers" :key="user" class="user-item">
                 <span class="username">@{{ user }}</span>
                 <a :href="`https://instagram.com/${user}`" target="_blank" class="btn-action btn-green">Ver</a>
               </li>
             </ul>
+            <div v-if="analysisResults.newFollowers.length > limitNew" class="load-more-container">
+              <button @click="loadMoreNew" class="btn-load-more">
+                Ver más ({{ analysisResults.newFollowers.length - limitNew }} restantes)
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -755,6 +805,38 @@ const logout = () => {
   color: white;
 }
 
+.count-badge {
+  font-size: 0.8em;
+  background: #f1f5f9;
+  padding: 2px 8px;
+  border-radius: 10px;
+  color: #64748b;
+  margin-left: 8px;
+}
+
+.load-more-container {
+  padding-top: 10px;
+  text-align: center;
+}
+
+.btn-load-more {
+  background: white;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.btn-load-more:hover {
+  background: #f8fafc;
+  color: #334155;
+  border-color: #cbd5e1;
+}
+
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s ease;
@@ -782,6 +864,10 @@ const logout = () => {
 }
 
 @media (max-width: 600px) {
+  .dashboard-container {
+    overflow-x: hidden;
+  }
+
   .card-upload {
     padding: 1.5rem;
   }
@@ -812,10 +898,30 @@ const logout = () => {
 
   .lists-container {
     grid-template-columns: 1fr;
+    gap: 1.5rem;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .list-column {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 1rem;
   }
 
   .stat-card .number {
     font-size: 1.8rem;
+  }
+
+  .user-item {
+    gap: 10px;
+  }
+
+  .username {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 200px;
   }
 }
 </style>
