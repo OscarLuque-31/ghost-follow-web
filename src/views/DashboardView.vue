@@ -1,119 +1,137 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
-import api from '@/services/api';
+import { ref, onMounted, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import api from '@/services/api'
 
-interface Stats { totalFollowers: number; gainedCount: number; lostCount: number; }
-interface AnalysisResult { stats: Stats; newFollowers: string[]; lostFollowers: string[]; }
+interface Stats {
+  totalFollowers: number
+  gainedCount: number
+  lostCount: number
+}
+interface AnalysisResult {
+  stats: Stats
+  newFollowers: string[]
+  lostFollowers: string[]
+}
 
-const file = ref<File | null>(null);
-const message = ref('');
-const messageType = ref<'success' | 'error' | ''>('');
-const isLoading = ref(false);
-const isDragging = ref(false);
-const router = useRouter();
-const route = useRoute();
-const fileInput = ref<HTMLInputElement | null>(null);
+const file = ref<File | null>(null)
+const message = ref('')
+const messageType = ref<'success' | 'error' | ''>('')
+const isLoading = ref(false)
+const isDragging = ref(false)
+const router = useRouter()
+const route = useRoute()
+const fileInput = ref<HTMLInputElement | null>(null)
 
-const isFirstTime = computed(() => route.query.welcome === 'true');
+const isFirstTime = ref(route.query.welcome === 'true')
 
-const triggerFileInput = () => fileInput.value?.click();
-const currentAccountName = ref('');
-const analysisResults = ref<AnalysisResult | null>(null);
-const showResults = ref(false);
+const triggerFileInput = () => fileInput.value?.click()
+const currentAccountName = ref('')
+const analysisResults = ref<AnalysisResult | null>(null)
+const showResults = ref(false)
 
 onMounted(async () => {
-  try {
-    const response = await api.get('/auth/me');
-    currentAccountName.value = response.data;
-  } catch (error) {
-    console.error(error);
-    localStorage.removeItem('jwt_token');
-    router.push('/login');
+  if (route.query.welcome) {
+    const newQuery = { ...route.query }
+    delete newQuery.welcome
+    router.replace({ query: newQuery })
   }
-});
+
+  try {
+    const response = await api.get('/auth/me')
+    currentAccountName.value = response.data
+  } catch (error) {
+    console.error(error)
+    localStorage.removeItem('jwt_token')
+    router.push('/login')
+  }
+})
 
 const formatFileSize = (bytes: number) => {
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-};
+  if (bytes === 0) return '0 Bytes'
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
 
 const handleFileSelect = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  const selectedFile = target.files?.[0];
-  if (selectedFile) processFile(selectedFile);
-  target.value = '';
-};
+  const target = event.target as HTMLInputElement
+  const selectedFile = target.files?.[0]
+  if (selectedFile) processFile(selectedFile)
+  target.value = ''
+}
 
-const onDragOver = (e: DragEvent) => { e.preventDefault(); isDragging.value = true; };
-const onDragLeave = (e: DragEvent) => { e.preventDefault(); isDragging.value = false; };
+const onDragOver = (e: DragEvent) => {
+  e.preventDefault()
+  isDragging.value = true
+}
+const onDragLeave = (e: DragEvent) => {
+  e.preventDefault()
+  isDragging.value = false
+}
 const onDrop = (e: DragEvent) => {
-  e.preventDefault();
-  isDragging.value = false;
-  const droppedFile = e.dataTransfer?.files?.[0];
-  if (droppedFile) processFile(droppedFile);
-};
+  e.preventDefault()
+  isDragging.value = false
+  const droppedFile = e.dataTransfer?.files?.[0]
+  if (droppedFile) processFile(droppedFile)
+}
 
 const processFile = (selectedFile: File) => {
-  if (!selectedFile.name.endsWith('.json')) {
-    message.value = '⚠️ Por favor, sube un archivo .json válido';
-    messageType.value = 'error';
-    return;
+  if (!selectedFile.name.toLowerCase().endsWith('.zip')) {
+    message.value = '⚠️ Por favor, sube el archivo .zip que te envió Instagram'
+    messageType.value = 'error'
+    return
   }
-  file.value = selectedFile;
-  message.value = '';
-  messageType.value = '';
-};
+  file.value = selectedFile
+  message.value = ''
+  messageType.value = ''
+}
 
 const removeFile = () => {
-  file.value = null;
-  message.value = '';
-};
+  file.value = null
+  message.value = ''
+}
 
 const uploadData = async () => {
-  if (!file.value) return;
+  if (!file.value) return
   if (!currentAccountName.value) {
-    message.value = '⚠️ Error identificando cuenta. Recarga.';
-    messageType.value = 'error';
-    return;
+    message.value = '⚠️ Error identificando cuenta. Recarga.'
+    messageType.value = 'error'
+    return
   }
-  isLoading.value = true;
-  message.value = '';
+
+  isLoading.value = true
+  message.value = ''
 
   try {
-    const fileContent = await file.value.text();
-    let jsonData;
-    try { jsonData = JSON.parse(fileContent); } catch (e) { throw new Error("JSON inválido."); }
-    if (!Array.isArray(jsonData)) throw new Error("Formato incorrecto (debe ser lista []).");
+    const formData = new FormData()
+    formData.append('file', file.value)
 
-    const response = await api.post('/followers/upload', jsonData, {
-      params: { accountName: currentAccountName.value }
-    });
+    const response = await api.post('/followers/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      params: { accountName: currentAccountName.value },
+    })
 
-    analysisResults.value = response.data;
-    showResults.value = true;
-    file.value = null;
-    message.value = '';
-
-    if (isFirstTime.value) {
-      router.replace({ query: {} });
-    }
-
+    analysisResults.value = response.data
+    showResults.value = true
+    file.value = null
+    message.value = ''
   } catch (error: any) {
-    message.value = error.message || '❌ Error al procesar.';
-    messageType.value = 'error';
+    const errorMsg = error.response?.data || error.message || '❌ Error al procesar el archivo.'
+    message.value = typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg)
+    messageType.value = 'error'
   } finally {
-    isLoading.value = false;
+    isLoading.value = false
   }
-};
+}
 
 const logout = () => {
-  localStorage.removeItem('jwt_token');
-  router.push('/login');
-};
+  localStorage.removeItem('jwt_token')
+  router.push('/login')
+}
 </script>
 
 <template>
@@ -137,27 +155,29 @@ const logout = () => {
     </nav>
 
     <main class="main-content">
-
-      <div v-if="isFirstTime" class="info-box welcome-box fade-in" style="max-width: 550px; margin-bottom: 25px;">
+      <div v-if="isFirstTime" class="info-box welcome-box fade-in" style="max-width: 550px; margin-bottom: 25px">
         <h3>🎉 ¡Bienvenido a GhostFollow!</h3>
         <p>
           Acabamos de guardar tu lista actual como <strong>Línea Base</strong>.
-          <br>
-          La próxima vez que subas un archivo (en unos días), lo compararemos con esta versión para decirte quién te ha
-          dejado de seguir.
+          <br />
+          La próxima vez que subas un archivo (en unos días), lo compararemos con esta versión para
+          decirte quién te ha dejado de seguir.
         </p>
       </div>
 
       <div v-if="!showResults" class="card-upload fade-in">
         <div class="card-header">
           <h2>Analizador</h2>
-          <p>Sube tu historial para analizar <strong>{{ currentAccountName }}</strong>.</p>
+          <p>
+            Sube tu historial para analizar <strong>{{ currentAccountName }}</strong>.
+          </p>
         </div>
 
         <div class="upload-area">
-          <div v-if="!file" class="drop-zone" :class="{ 'active': isDragging }" @dragover="onDragOver"
+          <div v-if="!file" class="drop-zone" :class="{ active: isDragging }" @dragover="onDragOver"
             @dragleave="onDragLeave" @drop="onDrop" @click="triggerFileInput">
-            <input type="file" ref="fileInput" class="hidden-input" accept=".json" @change="handleFileSelect" />
+            <input type="file" ref="fileInput" class="hidden-input" accept=".zip" @change="handleFileSelect" />
+
             <div class="icon-cloud">
               <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -166,13 +186,18 @@ const logout = () => {
                 <line x1="12" y1="3" x2="12" y2="15"></line>
               </svg>
             </div>
-            <p class="drop-text">Arrastra <span>followers_1.json</span> aquí</p>
+
+            <p class="drop-text">Arrastra el archivo <span>instagram_data.zip</span> aquí</p>
+            <p style="font-size: 0.8em; color: #94a3b8; margin-top: 5px">
+              (Tal cual te llegó al correo)
+            </p>
+
             <span class="browse-btn">o clic para buscar</span>
           </div>
 
           <div v-else class="file-preview">
             <div class="file-info">
-              <div class="file-icon">📄</div>
+              <div class="file-icon">📦</div>
               <div class="file-details">
                 <span class="file-name">{{ file.name }}</span>
                 <span class="file-size">{{ formatFileSize(file.size) }}</span>
@@ -182,8 +207,7 @@ const logout = () => {
           </div>
         </div>
 
-        <button @click="uploadData" class="btn-primary" :disabled="!file || isLoading"
-          :class="{ 'loading': isLoading }">
+        <button @click="uploadData" class="btn-primary" :disabled="!file || isLoading" :class="{ loading: isLoading }">
           <span v-if="!isLoading">Analizar Ahora</span>
           <span v-else class="loader"></span>
         </button>
@@ -211,8 +235,11 @@ const logout = () => {
           </div>
         </div>
 
-        <div v-if="!isFirstTime && analysisResults?.stats.gainedCount === 0 && analysisResults?.stats.lostCount === 0"
-          class="info-box clean-box fade-in">
+        <div v-if="
+          !isFirstTime &&
+          analysisResults?.stats.gainedCount === 0 &&
+          analysisResults?.stats.lostCount === 0
+        " class="info-box clean-box fade-in">
           <h3>😴 Todo tranquilo</h3>
           <p>No hay cambios respecto a tu último análisis.</p>
         </div>
@@ -239,13 +266,11 @@ const logout = () => {
           </div>
         </div>
       </div>
-
     </main>
   </div>
 </template>
 
 <style scoped>
-/* ... (Tus estilos anteriores se mantienen igual, solo asegúrate de tener estos nuevos) ... */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
@@ -259,7 +284,9 @@ const logout = () => {
   font-family: 'Inter', sans-serif;
   min-height: 100vh;
   background-color: #fdf2f8;
-  background-image: radial-gradient(at 0% 0%, hsla(334, 97%, 92%, 1) 0, transparent 50%), radial-gradient(at 100% 100%, hsla(265, 100%, 93%, 1) 0, transparent 50%);
+  background-image:
+    radial-gradient(at 0% 0%, hsla(334, 97%, 92%, 1) 0, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(265, 100%, 93%, 1) 0, transparent 50%);
   color: var(--text-main);
   display: flex;
   flex-direction: column;
@@ -496,7 +523,9 @@ const logout = () => {
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
   box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
   position: relative;
   overflow: hidden;
