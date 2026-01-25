@@ -1,11 +1,39 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import HistoryChart from '@/components/dashboard/HistoryChart.vue'
+import { ref, onMounted, computed } from 'vue'
+import HistoryChart from '@/components/HistoryChart.vue'
 import { useHistoryStats } from '@/composables/useAnalysisHistory'
 
 const props = defineProps<{ accountName: string }>()
 
 const { historyData, isLoadingHistory, errorHistory, fetchHistory } = useHistoryStats()
+
+const timeRange = ref<'1M' | '3M' | '6M' | '1Y' | 'ALL'>('ALL')
+
+const filteredHistory = computed(() => {
+  if (!historyData.value || historyData.value.length === 0) return []
+
+  if (timeRange.value === 'ALL') return historyData.value
+
+  const now = new Date()
+  const cutoffDate = new Date()
+
+  switch (timeRange.value) {
+    case '1M':
+      cutoffDate.setMonth(now.getMonth() - 1)
+      break
+    case '3M':
+      cutoffDate.setMonth(now.getMonth() - 3)
+      break
+    case '6M':
+      cutoffDate.setMonth(now.getMonth() - 6)
+      break
+    case '1Y':
+      cutoffDate.setFullYear(now.getFullYear() - 1)
+      break
+  }
+
+  return historyData.value.filter(point => new Date(point.date) >= cutoffDate)
+})
 
 onMounted(() => {
   if (props.accountName) {
@@ -31,11 +59,26 @@ onMounted(() => {
 
     <div v-else-if="historyData.length < 2" class="empty-state">
       <div class="icon">📉</div>
-      <p>Necesitas subir al menos <strong>2 archivos</strong> en fechas distintas para ver una gráfica de evolución.</p>
+      <p>Necesitas subir al menos <strong>2 archivos</strong> en fechas distintas.</p>
     </div>
 
-    <div v-else class="chart-card">
-      <HistoryChart :history-data="historyData" />
+    <div v-else class="chart-section">
+
+      <div class="filter-bar">
+        <button @click="timeRange = '1M'" :class="{ active: timeRange === '1M' }">1 Mes</button>
+        <button @click="timeRange = '3M'" :class="{ active: timeRange === '3M' }">3 Meses</button>
+        <button @click="timeRange = '6M'" :class="{ active: timeRange === '6M' }">6 Meses</button>
+        <button @click="timeRange = '1Y'" :class="{ active: timeRange === '1Y' }">1 Año</button>
+        <button @click="timeRange = 'ALL'" :class="{ active: timeRange === 'ALL' }">Todo</button>
+      </div>
+
+      <div class="chart-card">
+        <HistoryChart :history-data="filteredHistory" />
+      </div>
+
+      <p class="range-info">
+        Mostrando {{ filteredHistory.length }} análisis en este periodo.
+      </p>
     </div>
   </div>
 </template>
@@ -63,6 +106,45 @@ onMounted(() => {
   color: #64748b;
 }
 
+.chart-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ESTILOS DE LOS FILTROS */
+.filter-bar {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-bar button {
+  background: white;
+  border: 1px solid #e2e8f0;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  color: #64748b;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.filter-bar button:hover {
+  border-color: #e91e63;
+  color: #e91e63;
+}
+
+.filter-bar button.active {
+  background: #e91e63;
+  color: white;
+  border-color: #e91e63;
+  box-shadow: 0 4px 6px rgba(233, 30, 99, 0.2);
+}
+
 .chart-card {
   background: white;
   padding: 2rem;
@@ -72,6 +154,14 @@ onMounted(() => {
   height: 400px;
 }
 
+.range-info {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-top: -10px;
+}
+
+/* ... Resto de loader, errors, fade-in ... */
 .loading-state,
 .error-state,
 .empty-state {
