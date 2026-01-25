@@ -27,6 +27,42 @@ const router = useRouter()
 const route = useRoute()
 const fileInput = ref<HTMLInputElement | null>(null)
 
+// --- LÓGICA DE MENSAJES DE CARGA ---
+const loadingText = ref('Iniciando carga...')
+let loadingInterval: number | null = null
+
+const processingMessages = [
+  '📂 Descomprimiendo el archivo ZIP...',
+  '🔍 Leyendo tus listas de seguidores...',
+  '🧮 Comparando con el historial anterior...',
+  '☕ Esto puede tardar un poco si tienes muchos seguidores...',
+  '🧐 Identificando quién dejó de seguirte...',
+  '🚀 ¡Ya casi está listo!',
+  '✨ Finalizando análisis...'
+]
+
+const startLoadingMessages = () => {
+  let index = 0
+  loadingText.value = processingMessages[0] || 'Cargando...'
+
+  loadingInterval = setInterval(() => {
+    index++
+    if (index >= processingMessages.length) {
+      index = processingMessages.length - 1
+    }
+    loadingText.value = processingMessages[index] || 'Procesando...'
+  }, 4000)
+}
+
+const stopLoadingMessages = () => {
+  if (loadingInterval) {
+    clearInterval(loadingInterval)
+    loadingInterval = null
+  }
+  loadingText.value = 'Procesando...'
+}
+// ------------------------------------
+
 const isFirstTime = ref(route.query.welcome === 'true')
 
 const triggerFileInput = () => fileInput.value?.click()
@@ -134,6 +170,9 @@ const uploadData = async () => {
   isLoading.value = true
   message.value = ''
 
+  // Iniciamos la rotación de mensajes
+  startLoadingMessages()
+
   try {
     const formData = new FormData()
     formData.append('file', file.value)
@@ -159,6 +198,8 @@ const uploadData = async () => {
     messageType.value = 'error'
   } finally {
     isLoading.value = false
+    // Detenemos la rotación de mensajes
+    stopLoadingMessages()
   }
 }
 
@@ -243,7 +284,10 @@ const logout = () => {
 
         <button @click="uploadData" class="btn-primary" :disabled="!file || isLoading" :class="{ loading: isLoading }">
           <span v-if="!isLoading">Analizar Ahora</span>
-          <span v-else class="loader"></span>
+          <div v-else class="loading-content">
+            <span class="loader"></span>
+            <span class="loading-text">{{ loadingText }}</span>
+          </div>
         </button>
 
         <transition name="fade">
@@ -596,14 +640,30 @@ const logout = () => {
   box-shadow: none;
 }
 
+.loading-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.loading-text {
+  font-size: 0.95rem;
+  font-weight: 500;
+  white-space: nowrap;
+  animation: fadeIn 0.5s ease;
+}
+
 .loader {
-  width: 20px;
-  height: 20px;
-  border: 3px solid #ffffff;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #ffffff;
   border-bottom-color: transparent;
   border-radius: 50%;
   display: inline-block;
   animation: rotation 1s linear infinite;
+  flex-shrink: 0;
 }
 
 @keyframes rotation {
