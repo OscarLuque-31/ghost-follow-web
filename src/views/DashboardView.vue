@@ -8,13 +8,16 @@ import FileUploader from '@/components/dashboard/FileUploader.vue'
 import StatsCards from '@/components/dashboard/StatsCards.vue'
 import FollowerLists from '@/components/dashboard/FollowerLists.vue'
 import Navbar from '@/components/dashboard/NavBar.vue'
-
+import AnalisysHistory from '@/components/dashboard/AnalysisHistory.vue'
 
 import { useLoadingMessages } from '@/composables/useLoadingMessages'
 import { useFollowerAnalysis } from '@/composables/useFollowerAnalysis'
 
 const router = useRouter()
 const route = useRoute()
+
+// --- ESTADO DE PESTAÑAS ---
+const activeTab = ref<'analysis' | 'history'>('analysis')
 
 const currentAccountName = ref('')
 const isFirstTime = ref(route.query.welcome === 'true')
@@ -44,6 +47,7 @@ const handleUpload = async (file: File) => {
   try {
     await uploadAnalysis(file, currentAccountName.value)
   } catch (e) {
+    // Error manejado en composable
   } finally {
     stopLoadingMessages()
   }
@@ -60,21 +64,38 @@ const logout = () => {
     <Navbar :account-name="currentAccountName" @logout="logout" />
 
     <main class="main-content">
-      <WelcomeBanner :visible="isFirstTime" />
 
-      <FileUploader v-if="!showResults" :is-loading="isLoading" :loading-text="loadingText" :parent-message="apiError"
-        @upload="handleUpload" />
+      <div class="tabs-container fade-in">
+        <button class="tab-btn" :class="{ active: activeTab === 'analysis' }" @click="activeTab = 'analysis'">
+          🔍 Analizador
+        </button>
+        <button class="tab-btn" :class="{ active: activeTab === 'history' }" @click="activeTab = 'history'">
+          📈 Historial
+        </button>
+      </div>
 
-      <div v-else class="results-dashboard fade-in">
-        <button @click="resetAnalysis" class="btn-back">← Analizar otro archivo</button>
+      <div v-if="activeTab === 'analysis'" class="view-wrapper">
+        <WelcomeBanner :visible="isFirstTime" />
 
-        <div v-if="analysisResults">
-          <StatsCards :stats="analysisResults.stats" />
+        <FileUploader v-if="!showResults" :is-loading="isLoading" :loading-text="loadingText" :parent-message="apiError"
+          @upload="handleUpload" />
 
-          <FollowerLists :new-followers="analysisResults.newFollowers" :lost-followers="analysisResults.lostFollowers"
-            :lost-count="analysisResults.stats.lostCount" :gained-count="analysisResults.stats.gainedCount" />
+        <div v-else class="results-dashboard fade-in">
+          <button @click="resetAnalysis" class="btn-back">← Analizar otro archivo</button>
+
+          <div v-if="analysisResults">
+            <StatsCards :stats="analysisResults.stats" />
+
+            <FollowerLists :new-followers="analysisResults.newFollowers" :lost-followers="analysisResults.lostFollowers"
+              :lost-count="analysisResults.stats.lostCount" :gained-count="analysisResults.stats.gainedCount" />
+          </div>
         </div>
       </div>
+
+      <div v-else class="view-wrapper">
+        <AnalisysHistory :account-name="currentAccountName" />
+      </div>
+
     </main>
   </div>
 </template>
@@ -98,9 +119,53 @@ const logout = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   padding: 2rem;
 }
+
+/* --- ESTILOS DE TABS --- */
+.tabs-container {
+  background: white;
+  padding: 6px;
+  border-radius: 16px;
+  display: flex;
+  gap: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+  margin-bottom: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 12px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+}
+
+.tab-btn:hover {
+  color: #e91e63;
+  background: rgba(233, 30, 99, 0.05);
+}
+
+.tab-btn.active {
+  background: #e91e63;
+  color: white;
+  box-shadow: 0 4px 6px rgba(233, 30, 99, 0.2);
+}
+
+.view-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ----------------------- */
 
 .results-dashboard {
   width: 100%;
@@ -120,13 +185,6 @@ const logout = () => {
   align-self: flex-start;
   margin-bottom: -1rem;
   font-size: 0.95rem;
-}
-
-.chart-container-wrapper {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 16px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 .fade-in {
