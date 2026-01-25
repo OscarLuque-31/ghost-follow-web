@@ -28,38 +28,48 @@ const route = useRoute()
 const fileInput = ref<HTMLInputElement | null>(null)
 
 // --- LÓGICA DE MENSAJES DE CARGA ---
-const loadingText = ref('Iniciando carga...')
+const loadingText = ref('Analizando...')
 let loadingInterval: number | null = null
+let startTimeout: number | null = null
 
 const processingMessages = [
-  '📂 Descomprimiendo el archivo ZIP...',
-  '🔍 Leyendo tus listas de seguidores...',
-  '🧮 Comparando con el historial anterior...',
-  '☕ Esto puede tardar un poco si tienes muchos seguidores...',
-  '🧐 Identificando quién dejó de seguirte...',
-  '🚀 ¡Ya casi está listo!',
-  '✨ Finalizando análisis...'
+  '📂 Descomprimiendo ZIP...',
+  '🔍 Leyendo seguidores...',
+  '🧮 Comparando listas...',
+  '☕ Esto puede tardar un poco...',
+  '🧐 Buscando cambios...',
+  '🚀 ¡Ya casi está!',
+  '✨ Finalizando...'
 ]
 
 const startLoadingMessages = () => {
-  let index = 0
-  loadingText.value = processingMessages[0] || 'Cargando...'
+  loadingText.value = 'Analizando...'
 
-  loadingInterval = setInterval(() => {
-    index++
-    if (index >= processingMessages.length) {
-      index = processingMessages.length - 1
-    }
-    loadingText.value = processingMessages[index] || 'Procesando...'
-  }, 4000)
+  // Retrasamos el inicio de los mensajes rotativos 2 segundos
+  startTimeout = setTimeout(() => {
+    let index = 0
+    loadingText.value = processingMessages[0] || 'Procesando...'
+
+    loadingInterval = setInterval(() => {
+      index++
+      if (index >= processingMessages.length) {
+        index = processingMessages.length - 1
+      }
+      loadingText.value = processingMessages[index] || 'Procesando...'
+    }, 4000)
+  }, 2000)
 }
 
 const stopLoadingMessages = () => {
+  if (startTimeout) {
+    clearTimeout(startTimeout)
+    startTimeout = null
+  }
   if (loadingInterval) {
     clearInterval(loadingInterval)
     loadingInterval = null
   }
-  loadingText.value = 'Procesando...'
+  loadingText.value = 'Analizando...'
 }
 // ------------------------------------
 
@@ -170,7 +180,6 @@ const uploadData = async () => {
   isLoading.value = true
   message.value = ''
 
-  // Iniciamos la rotación de mensajes
   startLoadingMessages()
 
   try {
@@ -198,7 +207,6 @@ const uploadData = async () => {
     messageType.value = 'error'
   } finally {
     isLoading.value = false
-    // Detenemos la rotación de mensajes
     stopLoadingMessages()
   }
 }
@@ -646,6 +654,8 @@ const logout = () => {
   justify-content: center;
   gap: 12px;
   width: 100%;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .loading-text {
@@ -653,6 +663,9 @@ const logout = () => {
   font-weight: 500;
   white-space: nowrap;
   animation: fadeIn 0.5s ease;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .loader {
@@ -982,6 +995,10 @@ const logout = () => {
     text-overflow: ellipsis;
     white-space: nowrap;
     max-width: 200px;
+  }
+
+  .loading-text {
+    font-size: 0.8rem;
   }
 }
 </style>
