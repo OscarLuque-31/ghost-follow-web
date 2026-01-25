@@ -3,11 +3,12 @@ import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import api from '@/services/api'
 
-import TheNavbar from '@/components/TheNavbar.vue'
-import WelcomeBanner from '@/components/WelcomeBanner.vue'
-import FileUploader from '@/components/FileUploader.vue'
-import StatsCards from '@/components/StatsCards.vue'
-import FollowerLists from '@/components/FollowerLists.vue'
+import WelcomeBanner from '@/components/dashboard/WelcomeBanner.vue'
+import FileUploader from '@/components/dashboard/FileUploader.vue'
+import StatsCards from '@/components/dashboard/StatsCards.vue'
+import FollowerLists from '@/components/dashboard/FollowerLists.vue'
+import Navbar from '@/components/dashboard/NavBar.vue'
+
 
 import { useLoadingMessages } from '@/composables/useLoadingMessages'
 import { useFollowerAnalysis } from '@/composables/useFollowerAnalysis'
@@ -56,7 +57,7 @@ const logout = () => {
 
 <template>
   <div class="dashboard-container">
-    <TheNavbar :account-name="currentAccountName" @logout="logout" />
+    <Navbar :account-name="currentAccountName" @logout="logout" />
 
     <main class="main-content">
       <WelcomeBanner :visible="isFirstTime" />
