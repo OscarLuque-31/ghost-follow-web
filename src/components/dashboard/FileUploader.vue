@@ -225,6 +225,7 @@ const emitUpload = () => {
   box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
   position: relative;
   overflow: hidden;
+  margin-top: 20px;
 }
 
 .btn-primary:hover:not(:disabled) {
