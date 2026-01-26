@@ -128,7 +128,7 @@ onUnmounted(() => {
 .filter-bar button {
   background: white;
   border: 1px solid #e2e8f0;
-  padding: 4px 12px;
+  padding: 5px 20px;
   border-radius: 16px;
   font-size: 0.8rem;
   color: #64748b;
