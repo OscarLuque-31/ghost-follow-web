@@ -1,13 +1,17 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import HistoryChart from '@/components/dashboard/HistoryChart.vue'
 import { useHistoryStats } from '@/composables/useAnalysisHistory'
-
 const props = defineProps<{ accountName: string }>()
 
 const { historyData, isLoadingHistory, errorHistory, fetchHistory } = useHistoryStats()
 
 const timeRange = ref<'1M' | '3M' | '6M' | '1Y' | 'ALL'>('ALL')
+const windowWidth = ref(window.innerWidth)
+
+const updateWidth = () => {
+  windowWidth.value = window.innerWidth
+}
 
 const filteredHistory = computed(() => {
   if (!historyData.value || historyData.value.length === 0) return []
@@ -29,16 +33,21 @@ const filteredHistory = computed(() => {
 const chartWidthStyle = computed(() => {
   const points = filteredHistory.value.length
 
-  if (window.innerWidth > 600) return { width: '100%' }
-  if (points <= 8) return { width: '100%' }
+  if (windowWidth.value > 600) return { width: '100%' }
+  if (points <= 5) return { width: '100%' }
 
   return { width: `${Math.max(100, points * 50)}px` }
 })
 
 onMounted(() => {
+  window.addEventListener('resize', updateWidth)
   if (props.accountName) {
     fetchHistory(props.accountName)
   }
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateWidth)
 })
 </script>
 
@@ -57,7 +66,6 @@ onMounted(() => {
     </div>
 
     <div v-else class="chart-section">
-
       <div class="filter-bar">
         <button @click="timeRange = '1M'" :class="{ active: timeRange === '1M' }">1M</button>
         <button @click="timeRange = '3M'" :class="{ active: timeRange === '3M' }">3M</button>
@@ -107,6 +115,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  width: 100%;
 }
 
 .filter-bar {
@@ -139,33 +148,41 @@ onMounted(() => {
   border-radius: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   border: 1px solid white;
+
   height: 400px;
+
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  position: relative;
 }
 
+/* CONTENEDOR DE SCROLL */
 .chart-scroll-wrapper {
   flex: 1;
   width: 100%;
+  max-width: 100%;
+
   overflow-x: auto;
   overflow-y: hidden;
+
   -webkit-overflow-scrolling: touch;
 }
 
+/* CONTENEDOR INTERNO DINÁMICO */
 .chart-dynamic-width {
   height: 100%;
   position: relative;
 }
 
+/* ESTILOS MÓVIL */
 @media (max-width: 600px) {
   .chart-card {
     padding: 10px;
     height: 300px;
   }
 
-  .history-container {
-    gap: 1rem;
+  .chart-scroll-wrapper {
+    padding-bottom: 5px;
   }
 }
 
