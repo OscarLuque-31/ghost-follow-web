@@ -148,9 +148,6 @@ onUnmounted(() => {
   border-radius: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   border: 1px solid white;
-
-  height: 400px;
-
   display: flex;
   flex-direction: column;
   position: relative;
@@ -178,7 +175,6 @@ onUnmounted(() => {
 @media (max-width: 600px) {
   .chart-card {
     padding: 10px;
-    height: 300px;
   }
 
   .chart-scroll-wrapper {

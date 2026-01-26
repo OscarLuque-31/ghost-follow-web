@@ -300,7 +300,7 @@ const emitUpload = () => {
 
 @media (max-width: 600px) {
   .card-upload {
-    padding: 1.5rem;
+    padding: 1.0rem;
   }
 
   .loading-text {
