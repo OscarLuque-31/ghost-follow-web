@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import HistoryChart from '@/components/HistoryChart.vue'
+import HistoryChart from '@/components/dashboard/HistoryChart.vue'
 import { useHistoryStats } from '@/composables/useAnalysisHistory'
 
 const props = defineProps<{ accountName: string }>()
