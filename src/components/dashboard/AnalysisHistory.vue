@@ -73,7 +73,9 @@ onMounted(() => {
       </div>
 
       <div class="chart-card">
-        <HistoryChart :history-data="filteredHistory" />
+        <div class="chart-scroll-wrapper">
+          <HistoryChart :history-data="filteredHistory" />
+        </div>
       </div>
 
       <p class="range-info">
@@ -161,7 +163,6 @@ onMounted(() => {
   margin-top: -10px;
 }
 
-/* ... Resto de loader, errors, fade-in ... */
 .loading-state,
 .error-state,
 .empty-state {
@@ -212,6 +213,37 @@ onMounted(() => {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+.chart-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 24px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid white;
+  height: 400px;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-scroll-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+@media (max-width: 600px) {
+  .chart-card {
+    padding: 1rem;
+    overflow-x: auto;
+    display: block;
+  }
+
+  .chart-scroll-wrapper {
+    min-width: 600px;
+    height: 300px;
   }
 }
 </style>
