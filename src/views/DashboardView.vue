@@ -3,12 +3,14 @@ import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import api from '@/services/api'
 
+// Componentes
 import WelcomeBanner from '@/components/dashboard/WelcomeBanner.vue'
 import FileUploader from '@/components/dashboard/FileUploader.vue'
 import StatsCards from '@/components/dashboard/StatsCards.vue'
 import FollowerLists from '@/components/dashboard/FollowerLists.vue'
 import Navbar from '@/components/dashboard/NavBar.vue'
 import AnalisysHistory from '@/components/dashboard/AnalysisHistory.vue'
+import FollowersListView from '@/components/dashboard/FollowersListView.vue'
 
 import { useLoadingMessages } from '@/composables/useLoadingMessages'
 import { useFollowerAnalysis } from '@/composables/useFollowerAnalysis'
@@ -16,8 +18,7 @@ import { useFollowerAnalysis } from '@/composables/useFollowerAnalysis'
 const router = useRouter()
 const route = useRoute()
 
-// --- ESTADO DE PESTAÑAS ---
-const activeTab = ref<'analysis' | 'history'>('analysis')
+const activeTab = ref<'analysis' | 'history' | 'list'>('analysis')
 
 const currentAccountName = ref('')
 const isFirstTime = ref(route.query.welcome === 'true')
@@ -34,7 +35,8 @@ onMounted(async () => {
 
   try {
     const response = await api.get('/auth/me')
-    currentAccountName.value = response.data
+    // Asignamos el nombre para mostrarlo en el Navbar
+    currentAccountName.value = typeof response.data === 'string' ? response.data : response.data.username
   } catch (error) {
     console.error(error)
     localStorage.removeItem('jwt_token')
@@ -72,6 +74,9 @@ const logout = () => {
         <button class="tab-btn" :class="{ active: activeTab === 'history' }" @click="activeTab = 'history'">
           📈 Historial
         </button>
+        <button class="tab-btn" :class="{ active: activeTab === 'list' }" @click="activeTab = 'list'">
+          👥 Seguidores
+        </button>
       </div>
 
       <div v-if="activeTab === 'analysis'" class="view-wrapper">
@@ -92,8 +97,12 @@ const logout = () => {
         </div>
       </div>
 
-      <div v-else class="view-wrapper">
+      <div v-else-if="activeTab === 'history'" class="view-wrapper">
         <AnalisysHistory :account-name="currentAccountName" />
+      </div>
+
+      <div v-else-if="activeTab === 'list'" class="view-wrapper">
+        <FollowersListView />
       </div>
 
     </main>
