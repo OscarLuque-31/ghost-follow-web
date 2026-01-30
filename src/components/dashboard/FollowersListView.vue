@@ -136,7 +136,6 @@ const formatDate = (dateString: string) => {
   background: #fef2f2;
 }
 
-/* Buscador */
 .search-bar {
   position: relative;
   margin-bottom: 1rem;
