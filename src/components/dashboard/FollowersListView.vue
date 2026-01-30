@@ -2,34 +2,52 @@
 import { ref, computed, onMounted } from 'vue'
 import { useCurrentFollowers, type FollowerDto } from '@/composables/useCurrentFollowers'
 
-
 const { followersList, isLoadingList, errorList, fetchFollowersList } = useCurrentFollowers()
 
 const searchTerm = ref('')
 const ITEMS_PER_PAGE = 20
 const limit = ref(ITEMS_PER_PAGE)
 
-// Cargar datos al montar
+const filterDate = ref('')
+const filterType = ref<'after' | 'before'>('after')
+
 onMounted(() => {
   fetchFollowersList()
 })
 
-const displayedFollowers = computed(() => {
-  let list = followersList.value
+const allFilteredAndSorted = computed(() => {
+  let list = [...followersList.value]
 
   if (searchTerm.value) {
     const term = searchTerm.value.toLowerCase()
     list = list.filter(f => f.name.toLowerCase().includes(term))
   }
 
+  if (filterDate.value) {
+    const selectedDate = new Date(filterDate.value).getTime()
+
+    list = list.filter(f => {
+      const followerDate = new Date(f.followDate).getTime()
+
+      if (filterType.value === 'after') {
+        return followerDate >= selectedDate
+      } else {
+        return followerDate <= selectedDate
+      }
+    })
+  }
+
   list.sort((a, b) => new Date(b.followDate).getTime() - new Date(a.followDate).getTime())
 
-  return list.slice(0, limit.value)
+  return list
+})
+
+const displayedFollowers = computed(() => {
+  return allFilteredAndSorted.value.slice(0, limit.value)
 })
 
 const totalFiltered = computed(() => {
-  if (!searchTerm.value) return followersList.value.length
-  return followersList.value.filter(f => f.name.toLowerCase().includes(searchTerm.value.toLowerCase())).length
+  return allFilteredAndSorted.value.length
 })
 
 const loadMore = () => {
@@ -44,6 +62,10 @@ const formatDate = (dateString: string) => {
     month: 'short',
     year: 'numeric'
   }).format(date)
+}
+
+const clearDateFilter = () => {
+  filterDate.value = ''
 }
 </script>
 
@@ -64,10 +86,29 @@ const formatDate = (dateString: string) => {
 
     <div v-else class="content-box">
 
-      <div class="search-bar">
-        <span class="icon">🔍</span>
-        <input v-model="searchTerm" type="text" placeholder="Buscar usuario...">
-        <span class="count-badge">{{ totalFiltered }}</span>
+      <div class="filters-container">
+
+        <div class="search-bar">
+          <span class="icon">🔍</span>
+          <input v-model="searchTerm" type="text" placeholder="Buscar usuario...">
+        </div>
+
+        <div class="date-filter-bar">
+          <select v-model="filterType" class="filter-select">
+            <option value="after">Desde el</option>
+            <option value="before">Antes del</option>
+          </select>
+
+          <input type="date" v-model="filterDate" class="date-input">
+
+          <button v-if="filterDate" @click="clearDateFilter" class="btn-clear" title="Limpiar fecha">
+            ✕
+          </button>
+        </div>
+
+        <div class="count-row">
+          <span class="count-badge">Encontrados: {{ totalFiltered }}</span>
+        </div>
       </div>
 
       <div class="followers-grid">
@@ -93,7 +134,7 @@ const formatDate = (dateString: string) => {
       </div>
 
       <div v-if="totalFiltered === 0 && followersList.length > 0" class="empty-search">
-        No se encontraron usuarios con "{{ searchTerm }}"
+        No se encontraron resultados con los filtros actuales.
       </div>
     </div>
   </div>
@@ -136,15 +177,25 @@ const formatDate = (dateString: string) => {
   background: #fef2f2;
 }
 
-.search-bar {
-  position: relative;
-  margin-bottom: 1rem;
+/* NUEVO: Contenedor de filtros */
+.filters-container {
   background: white;
-  border-radius: 12px;
-  padding: 8px 12px;
+  padding: 1rem;
+  border-radius: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+
+.search-bar {
   display: flex;
   align-items: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 8px 12px;
   border: 1px solid #e2e8f0;
 }
 
@@ -157,20 +208,68 @@ const formatDate = (dateString: string) => {
   border: none;
   outline: none;
   flex: 1;
-  font-size: 0.95rem;
+  background: transparent;
   color: #334155;
 }
 
-.count-badge {
-  background: #f1f5f9;
+/* NUEVO: Barra de fecha */
+.date-filter-bar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.filter-select {
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
   color: #64748b;
-  padding: 2px 8px;
-  border-radius: 6px;
+  outline: none;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.date-input {
+  flex: 1;
+  padding: 7px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #334155;
+  outline: none;
+  font-family: inherit;
+}
+
+.btn-clear {
+  background: #fee2e2;
+  color: #ef4444;
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.count-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.count-badge {
+  background: #e91e63;
+  color: white;
+  padding: 2px 10px;
+  border-radius: 10px;
   font-size: 0.75rem;
   font-weight: 600;
 }
 
-/* Grid de Tarjetas */
+/* ... El resto de tus estilos (grid, cards, loader) se quedan igual ... */
 .followers-grid {
   display: flex;
   flex-direction: column;
@@ -239,7 +338,6 @@ const formatDate = (dateString: string) => {
   color: #e91e63;
 }
 
-/* Botón Cargar Más */
 .load-more-area {
   text-align: center;
   margin-top: 1rem;
