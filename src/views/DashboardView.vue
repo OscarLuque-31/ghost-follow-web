@@ -109,6 +109,11 @@ const logout = () => {
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+/* Reset básico para evitar desbordes */
+* {
+  box-sizing: border-box;
+}
+
 .dashboard-container {
   font-family: 'Inter', sans-serif;
   min-height: 100vh;
@@ -118,6 +123,8 @@ const logout = () => {
   color: #2c3e50;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
+  /* Seguridad extra */
 }
 
 .main-content {
@@ -126,6 +133,9 @@ const logout = () => {
   flex-direction: column;
   align-items: center;
   padding: 2rem;
+  width: 100%;
+  /* Asegura que ocupe todo */
+  max-width: 100%;
 }
 
 /* --- ESTILOS DE TABS --- */
@@ -134,10 +144,16 @@ const logout = () => {
   padding: 6px;
   border-radius: 16px;
   display: flex;
+  justify-content: center;
+  /* Centradas */
+  flex-wrap: wrap;
+  /* IMPORTANTE: Si no caben, bajan de línea */
   gap: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
   margin-bottom: 2rem;
   border: 1px solid rgba(255, 255, 255, 0.6);
+  max-width: 100%;
+  /* Que no se salga */
 }
 
 .tab-btn {
@@ -151,6 +167,8 @@ const logout = () => {
   cursor: pointer;
   transition: all 0.2s ease;
   font-size: 0.95rem;
+  white-space: nowrap;
+  /* Evita que el texto del botón se rompa feo */
 }
 
 .tab-btn:hover {
@@ -169,6 +187,8 @@ const logout = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
+  /* Eliminamos anchos fijos que puedan romper el layout */
+  max-width: 100%;
 }
 
 /* ----------------------- */
@@ -176,10 +196,18 @@ const logout = () => {
 .results-dashboard {
   width: 100%;
   max-width: 900px;
+  /* Límite en PC */
   display: flex;
   flex-direction: column;
   gap: 2rem;
   margin-top: 1rem;
+}
+
+.analysis-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
 }
 
 .btn-back {
@@ -191,13 +219,6 @@ const logout = () => {
   align-self: flex-start;
   margin-bottom: -1rem;
   font-size: 0.95rem;
-}
-
-.analysis-content {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  width: 100%;
 }
 
 .fade-in {
@@ -216,9 +237,27 @@ const logout = () => {
   }
 }
 
+/* --- RESPONSIVE / MÓVIL --- */
 @media (max-width: 600px) {
-  .dashboard-container {
-    overflow-x: hidden;
+  .main-content {
+    /* Reducimos el padding en móvil para que las listas tengan más espacio */
+    padding: 1rem 0.8rem;
+  }
+
+  .tabs-container {
+    width: 100%;
+    border-radius: 12px;
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    text-align: center;
+  }
+
+  .results-dashboard {
+    width: 100%;
   }
 }
 </style>
