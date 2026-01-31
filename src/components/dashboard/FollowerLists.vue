@@ -49,7 +49,7 @@ const loadMoreLost = () => limitLost.value += ITEMS_PER_PAGE
         <ul class="user-list">
           <li v-for="user in displayedNew" :key="user" class="user-item">
             <span class="username">@{{ user }}</span>
-            <a :href="`https://instagram.com/${user}`" target="_blank" class="btn-action btn-green">Ver</a>
+            <a :href="`https://www.instagram.com/${user}`" target="_blank" class="btn-action btn-green">Ver</a>
           </li>
         </ul>
         <div v-if="newFollowers.length > limitNew" class="load-more-container">
