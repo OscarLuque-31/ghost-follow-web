@@ -1,9 +1,16 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 
+// 1. Definimos la estructura del objeto que viene del Backend
+interface FollowerItem {
+  name: string
+  url: string
+  followDate?: string // Opcional, por si lo usas en el futuro
+}
+
 const props = defineProps<{
-  newFollowers: string[]
-  lostFollowers: string[]
+  newFollowers: FollowerItem[]  // <--- CAMBIADO: Ahora es array de objetos
+  lostFollowers: FollowerItem[] // <--- CAMBIADO: Ahora es array de objetos
   lostCount: number
   gainedCount: number
 }>()
@@ -27,14 +34,18 @@ const loadMoreLost = () => limitLost.value += ITEMS_PER_PAGE
     </div>
 
     <div class="lists-container">
+
       <div v-if="lostFollowers.length > 0" class="list-column">
         <h3 class="list-title text-red">
           📉 Han dejado de seguirte <span class="count-badge">{{ lostCount }}</span>
         </h3>
         <ul class="user-list">
-          <li v-for="user in displayedLost" :key="user" class="user-item">
-            <span class="username">@{{ user }}</span>
-            <a :href="`https://www.instagram.com/${user}`" target="_blank" class="btn-action btn-red">Ver</a>
+          <li v-for="user in displayedLost" :key="user.name" class="user-item">
+
+            <span class="username">@{{ user.name }}</span>
+
+            <a :href="user.url" target="_blank" class="btn-action btn-red">Ver</a>
+
           </li>
         </ul>
         <div v-if="lostFollowers.length > limitLost" class="load-more-container">
@@ -47,9 +58,12 @@ const loadMoreLost = () => limitLost.value += ITEMS_PER_PAGE
           ✨ Nuevos seguidores <span class="count-badge">{{ gainedCount }}</span>
         </h3>
         <ul class="user-list">
-          <li v-for="user in displayedNew" :key="user" class="user-item">
-            <span class="username">@{{ user }}</span>
-            <a :href="`https://www.instagram.com/${user}`" target="_blank" class="btn-action btn-green">Ver</a>
+          <li v-for="user in displayedNew" :key="user.name" class="user-item">
+
+            <span class="username">@{{ user.name }}</span>
+
+            <a :href="user.url" target="_blank" class="btn-action btn-green">Ver</a>
+
           </li>
         </ul>
         <div v-if="newFollowers.length > limitNew" class="load-more-container">
@@ -61,6 +75,7 @@ const loadMoreLost = () => limitLost.value += ITEMS_PER_PAGE
 </template>
 
 <style scoped>
+/* TUS ESTILOS SE MANTIENEN EXACTAMENTE IGUAL */
 .info-box {
   padding: 20px;
   border-radius: 16px;

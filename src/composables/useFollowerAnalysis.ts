@@ -6,10 +6,17 @@ export interface Stats {
   gainedCount: number
   lostCount: number
 }
+
+export interface FollowerItem {
+  name: string
+  url: string
+  followDate?: string
+}
+
 export interface AnalysisResult {
   stats: Stats
-  newFollowers: string[]
-  lostFollowers: string[]
+  newFollowers: FollowerItem[]
+  lostFollowers: FollowerItem[]
 }
 
 export function useFollowerAnalysis() {
