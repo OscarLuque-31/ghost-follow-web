@@ -35,7 +35,6 @@ onMounted(async () => {
 
   try {
     const response = await api.get('/auth/me')
-    // Asignamos el nombre para mostrarlo en el Navbar
     currentAccountName.value = typeof response.data === 'string' ? response.data : response.data.username
   } catch (error) {
     console.error(error)
@@ -48,8 +47,6 @@ const handleUpload = async (file: File) => {
   startLoadingMessages()
   try {
     await uploadAnalysis(file, currentAccountName.value)
-  } catch (e) {
-    // Error manejado en composable
   } finally {
     stopLoadingMessages()
   }
@@ -88,7 +85,7 @@ const logout = () => {
         <div v-else class="results-dashboard fade-in">
           <button @click="resetAnalysis" class="btn-back">← Analizar otro archivo</button>
 
-          <div v-if="analysisResults">
+          <div v-if="analysisResults" class="analysis-content">
             <StatsCards :stats="analysisResults.stats" />
 
             <FollowerLists :new-followers="analysisResults.newFollowers" :lost-followers="analysisResults.lostFollowers"
@@ -194,6 +191,13 @@ const logout = () => {
   align-self: flex-start;
   margin-bottom: -1rem;
   font-size: 0.95rem;
+}
+
+.analysis-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
 }
 
 .fade-in {
