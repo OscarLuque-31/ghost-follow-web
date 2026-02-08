@@ -11,6 +11,8 @@ import FollowerLists from '@/components/dashboard/FollowerLists.vue'
 import Navbar from '@/components/dashboard/NavBar.vue'
 import AnalisysHistory from '@/components/dashboard/AnalysisHistory.vue'
 import FollowersListView from '@/components/dashboard/FollowersListView.vue'
+// IMPORTAMOS EL NUEVO COMPONENTE
+import RelationshipView from '@/components/dashboard/RelationshipView.vue'
 
 import { useLoadingMessages } from '@/composables/useLoadingMessages'
 import { useFollowerAnalysis } from '@/composables/useFollowerAnalysis'
@@ -18,7 +20,7 @@ import { useFollowerAnalysis } from '@/composables/useFollowerAnalysis'
 const router = useRouter()
 const route = useRoute()
 
-const activeTab = ref<'analysis' | 'history' | 'list'>('analysis')
+const activeTab = ref<'analysis' | 'history' | 'list' | 'relationships'>('analysis')
 
 const currentAccountName = ref('')
 const isFirstTime = ref(route.query.welcome === 'true')
@@ -68,6 +70,11 @@ const logout = () => {
         <button class="tab-btn" :class="{ active: activeTab === 'analysis' }" @click="activeTab = 'analysis'">
           🔍 Analizador
         </button>
+
+        <button class="tab-btn" :class="{ active: activeTab === 'relationships' }" @click="activeTab = 'relationships'">
+          💞 Relaciones
+        </button>
+
         <button class="tab-btn" :class="{ active: activeTab === 'history' }" @click="activeTab = 'history'">
           📈 Historial
         </button>
@@ -94,6 +101,10 @@ const logout = () => {
         </div>
       </div>
 
+      <div v-else-if="activeTab === 'relationships'" class="view-wrapper fade-in">
+        <RelationshipView />
+      </div>
+
       <div v-else-if="activeTab === 'history'" class="view-wrapper">
         <AnalisysHistory :account-name="currentAccountName" />
       </div>
@@ -109,7 +120,6 @@ const logout = () => {
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-/* Reset básico para evitar desbordes */
 * {
   box-sizing: border-box;
 }
@@ -124,7 +134,6 @@ const logout = () => {
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
-  /* Seguridad extra */
 }
 
 .main-content {
@@ -134,26 +143,21 @@ const logout = () => {
   align-items: center;
   padding: 2rem;
   width: 100%;
-  /* Asegura que ocupe todo */
   max-width: 100%;
 }
 
-/* --- ESTILOS DE TABS --- */
 .tabs-container {
   background: white;
   padding: 6px;
   border-radius: 16px;
   display: flex;
   justify-content: center;
-  /* Centradas */
   flex-wrap: wrap;
-  /* IMPORTANTE: Si no caben, bajan de línea */
   gap: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
   margin-bottom: 2rem;
   border: 1px solid rgba(255, 255, 255, 0.6);
   max-width: 100%;
-  /* Que no se salga */
 }
 
 .tab-btn {
@@ -168,7 +172,6 @@ const logout = () => {
   transition: all 0.2s ease;
   font-size: 0.95rem;
   white-space: nowrap;
-  /* Evita que el texto del botón se rompa feo */
 }
 
 .tab-btn:hover {
@@ -187,16 +190,12 @@ const logout = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* Eliminamos anchos fijos que puedan romper el layout */
   max-width: 100%;
 }
-
-/* ----------------------- */
 
 .results-dashboard {
   width: 100%;
   max-width: 900px;
-  /* Límite en PC */
   display: flex;
   flex-direction: column;
   gap: 2rem;
@@ -237,10 +236,8 @@ const logout = () => {
   }
 }
 
-/* --- RESPONSIVE / MÓVIL --- */
 @media (max-width: 600px) {
   .main-content {
-    /* Reducimos el padding en móvil para que las listas tengan más espacio */
     padding: 1rem 0.8rem;
   }
 
