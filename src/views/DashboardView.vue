@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import api from '@/services/api'
+import { useUser } from '@/composables/useUser'
 
-// Componentes
 import WelcomeBanner from '@/components/dashboard/WelcomeBanner.vue'
 import FileUploader from '@/components/dashboard/FileUploader.vue'
 import StatsCards from '@/components/dashboard/StatsCards.vue'
@@ -11,19 +10,22 @@ import FollowerLists from '@/components/dashboard/FollowerLists.vue'
 import Navbar from '@/components/dashboard/NavBar.vue'
 import AnalisysHistory from '@/components/dashboard/AnalysisHistory.vue'
 import FollowersListView from '@/components/dashboard/FollowersListView.vue'
-// IMPORTAMOS EL NUEVO COMPONENTE
 import RelationshipView from '@/components/dashboard/RelationshipView.vue'
+
+import LockedFeature from '@/components/dashboard/LockedFeature.vue'
+import PricingModal from '@/components/dashboard/PricingModal.vue'
 
 import { useLoadingMessages } from '@/composables/useLoadingMessages'
 import { useFollowerAnalysis } from '@/composables/useFollowerAnalysis'
 
 const router = useRouter()
 const route = useRoute()
+const { fetchUser, isPremium, user } = useUser()
 
 const activeTab = ref<'analysis' | 'history' | 'list' | 'relationships'>('analysis')
-
-const currentAccountName = ref('')
 const isFirstTime = ref(route.query.welcome === 'true')
+
+const showPricing = ref(false)
 
 const { loadingText, startLoadingMessages, stopLoadingMessages } = useLoadingMessages()
 const { analysisResults, isLoading, showResults, apiError, uploadAnalysis, resetAnalysis } = useFollowerAnalysis()
@@ -34,67 +36,55 @@ onMounted(async () => {
     delete newQuery.welcome
     router.replace({ query: newQuery })
   }
-
-  try {
-    const response = await api.get('/auth/me')
-    currentAccountName.value = typeof response.data === 'string' ? response.data : response.data.username
-  } catch (error) {
-    console.error(error)
-    localStorage.removeItem('jwt_token')
-    router.push('/login')
-  }
+  await fetchUser()
 })
 
 const handleUpload = async (file: File) => {
   startLoadingMessages()
   try {
-    await uploadAnalysis(file, currentAccountName.value)
+    await uploadAnalysis(file, user.value?.instagramUserName || '')
   } finally {
     stopLoadingMessages()
   }
 }
 
-const logout = () => {
-  localStorage.removeItem('jwt_token')
-  router.push('/login')
+const switchTab = (tab: typeof activeTab.value) => {
+  activeTab.value = tab
 }
 </script>
 
 <template>
-  <div class="dashboard-container">
-    <Navbar :account-name="currentAccountName" @logout="logout" />
+  <div class="dashboard-container" v-if="user">
+    <Navbar />
 
     <main class="main-content">
 
       <div class="tabs-container fade-in">
-        <button class="tab-btn" :class="{ active: activeTab === 'analysis' }" @click="activeTab = 'analysis'">
+        <button class="tab-btn" :class="{ active: activeTab === 'analysis' }" @click="switchTab('analysis')">
           🔍 Analizador
         </button>
 
-        <button class="tab-btn" :class="{ active: activeTab === 'relationships' }" @click="activeTab = 'relationships'">
-          💞 Relaciones
+        <button class="tab-btn" :class="{ active: activeTab === 'relationships' }" @click="switchTab('relationships')">
+          <span v-if="!isPremium" class="lock-icon">🔒</span> 💞 Relaciones
         </button>
 
-        <button class="tab-btn" :class="{ active: activeTab === 'history' }" @click="activeTab = 'history'">
-          📈 Historial
+        <button class="tab-btn" :class="{ active: activeTab === 'history' }" @click="switchTab('history')">
+          <span v-if="!isPremium" class="lock-icon">🔒</span> 📈 Historial
         </button>
-        <button class="tab-btn" :class="{ active: activeTab === 'list' }" @click="activeTab = 'list'">
-          👥 Seguidores
+
+        <button class="tab-btn" :class="{ active: activeTab === 'list' }" @click="switchTab('list')">
+          <span v-if="!isPremium" class="lock-icon">🔒</span> 👥 Seguidores
         </button>
       </div>
 
       <div v-if="activeTab === 'analysis'" class="view-wrapper">
         <WelcomeBanner :visible="isFirstTime" />
-
         <FileUploader v-if="!showResults" :is-loading="isLoading" :loading-text="loadingText" :parent-message="apiError"
           @upload="handleUpload" />
-
         <div v-else class="results-dashboard fade-in">
           <button @click="resetAnalysis" class="btn-back">← Analizar otro archivo</button>
-
           <div v-if="analysisResults" class="analysis-content">
             <StatsCards :stats="analysisResults.stats" />
-
             <FollowerLists :new-followers="analysisResults.newFollowers" :lost-followers="analysisResults.lostFollowers"
               :lost-count="analysisResults.stats.lostCount" :gained-count="analysisResults.stats.gainedCount" />
           </div>
@@ -102,18 +92,32 @@ const logout = () => {
       </div>
 
       <div v-else-if="activeTab === 'relationships'" class="view-wrapper fade-in">
-        <RelationshipView />
+        <RelationshipView v-if="isPremium" />
+        <LockedFeature v-else title="¿Quién te ha traicionado?"
+          description="Descubre quién dejó de seguirte y quiénes son tus verdaderos fans."
+          :features="['Lista de Traidores (No te siguen de vuelta)', 'Lista de Fans (Te siguen, tú no)', 'Filtrado inteligente']"
+          @open-pricing="showPricing = true" />
       </div>
 
       <div v-else-if="activeTab === 'history'" class="view-wrapper">
-        <AnalisysHistory :account-name="currentAccountName" />
+        <AnalisysHistory v-if="isPremium" :account-name="user.instagramUserName" />
+        <LockedFeature v-else title="Tu historial completo"
+          description="Viaja en el tiempo y mira cómo ha crecido tu cuenta mes a mes."
+          :features="['Gráficas de crecimiento', 'Comparativa mes a mes', 'Histórico de unfollows']"
+          @open-pricing="showPricing = true" />
       </div>
 
       <div v-else-if="activeTab === 'list'" class="view-wrapper">
-        <FollowersListView />
+        <FollowersListView v-if="isPremium" />
+        <LockedFeature v-else title="Todos tus seguidores"
+          description="Gestiona y busca entre todos tus seguidores de forma avanzada."
+          :features="['Buscador avanzado', 'Filtros por fecha', 'Exportación de datos']"
+          @open-pricing="showPricing = true" />
       </div>
 
     </main>
+
+    <PricingModal v-if="showPricing" @close="showPricing = false" />
   </div>
 </template>
 
@@ -256,5 +260,31 @@ const logout = () => {
   .results-dashboard {
     width: 100%;
   }
+}
+
+.tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  /* Para alinear el candado */
+}
+
+.tab-btn.locked {
+  color: #94a3b8;
+  /* Color grisáceo */
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+/* Efecto hover diferente para bloqueados */
+.tab-btn.locked:hover {
+  background: #f1f5f9;
+  /* Gris claro, no el rosa de activado */
+  color: #64748b;
+  box-shadow: none;
+}
+
+.lock-icon {
+  font-size: 0.9em;
 }
 </style>
