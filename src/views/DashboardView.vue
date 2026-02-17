@@ -3,17 +3,20 @@ import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useUser } from '@/composables/useUser'
 
+// Componentes Views
+import Navbar from '@/components/dashboard/NavBar.vue'
 import WelcomeBanner from '@/components/dashboard/WelcomeBanner.vue'
 import FileUploader from '@/components/dashboard/FileUploader.vue'
 import StatsCards from '@/components/dashboard/StatsCards.vue'
 import FollowerLists from '@/components/dashboard/FollowerLists.vue'
-import Navbar from '@/components/dashboard/NavBar.vue'
 import AnalisysHistory from '@/components/dashboard/AnalysisHistory.vue'
 import FollowersListView from '@/components/dashboard/FollowersListView.vue'
 import RelationshipView from '@/components/dashboard/RelationshipView.vue'
 
+// NUEVOS COMPONENTES (Ahora son Vistas)
 import LockedFeature from '@/components/dashboard/LockedFeature.vue'
-import PricingModal from '@/components/dashboard/PricingModal.vue'
+import PricingView from '@/components/dashboard/PricingView.vue'
+import SettingsView from '@/components/dashboard/SettingsView.vue'
 
 import { useLoadingMessages } from '@/composables/useLoadingMessages'
 import { useFollowerAnalysis } from '@/composables/useFollowerAnalysis'
@@ -22,10 +25,9 @@ const router = useRouter()
 const route = useRoute()
 const { fetchUser, isPremium, user } = useUser()
 
-const activeTab = ref<'analysis' | 'history' | 'list' | 'relationships'>('analysis')
+// AÑADIMOS 'pricing' y 'profile' al tipo de pestaña
+const activeTab = ref<'analysis' | 'history' | 'list' | 'relationships' | 'pricing' | 'profile'>('analysis')
 const isFirstTime = ref(route.query.welcome === 'true')
-
-const showPricing = ref(false)
 
 const { loadingText, startLoadingMessages, stopLoadingMessages } = useLoadingMessages()
 const { analysisResults, isLoading, showResults, apiError, uploadAnalysis, resetAnalysis } = useFollowerAnalysis()
@@ -48,14 +50,16 @@ const handleUpload = async (file: File) => {
   }
 }
 
-const switchTab = (tab: typeof activeTab.value) => {
+// Función para cambiar de pestaña
+const switchTab = (tab: any) => {
   activeTab.value = tab
 }
 </script>
 
 <template>
   <div class="dashboard-container" v-if="user">
-    <Navbar />
+
+    <Navbar @navigate="switchTab" />
 
     <main class="main-content">
 
@@ -63,15 +67,12 @@ const switchTab = (tab: typeof activeTab.value) => {
         <button class="tab-btn" :class="{ active: activeTab === 'analysis' }" @click="switchTab('analysis')">
           🔍 Analizador
         </button>
-
         <button class="tab-btn" :class="{ active: activeTab === 'relationships' }" @click="switchTab('relationships')">
           <span v-if="!isPremium" class="lock-icon">🔒</span> 💞 Relaciones
         </button>
-
         <button class="tab-btn" :class="{ active: activeTab === 'history' }" @click="switchTab('history')">
           <span v-if="!isPremium" class="lock-icon">🔒</span> 📈 Historial
         </button>
-
         <button class="tab-btn" :class="{ active: activeTab === 'list' }" @click="switchTab('list')">
           <span v-if="!isPremium" class="lock-icon">🔒</span> 👥 Seguidores
         </button>
@@ -93,31 +94,32 @@ const switchTab = (tab: typeof activeTab.value) => {
 
       <div v-else-if="activeTab === 'relationships'" class="view-wrapper fade-in">
         <RelationshipView v-if="isPremium" />
-        <LockedFeature v-else title="¿Quién te ha traicionado?"
-          description="Descubre quién dejó de seguirte y quiénes son tus verdaderos fans."
-          :features="['Lista de Traidores (No te siguen de vuelta)', 'Lista de Fans (Te siguen, tú no)', 'Filtrado inteligente']"
-          @open-pricing="showPricing = true" />
+        <LockedFeature v-else title="¿Quién te ha traicionado?" description="Descubre quién dejó de seguirte."
+          :features="['Lista de Traidores', 'Lista de Fans', 'Filtrado inteligente']"
+          @open-pricing="switchTab('pricing')" />
       </div>
 
       <div v-else-if="activeTab === 'history'" class="view-wrapper">
         <AnalisysHistory v-if="isPremium" :account-name="user.instagramUserName" />
-        <LockedFeature v-else title="Tu historial completo"
-          description="Viaja en el tiempo y mira cómo ha crecido tu cuenta mes a mes."
-          :features="['Gráficas de crecimiento', 'Comparativa mes a mes', 'Histórico de unfollows']"
-          @open-pricing="showPricing = true" />
+        <LockedFeature v-else title="Tu historial completo" description="Viaja en el tiempo."
+          :features="['Gráficas de crecimiento', 'Comparativa mes a mes']" @open-pricing="switchTab('pricing')" />
       </div>
 
       <div v-else-if="activeTab === 'list'" class="view-wrapper">
         <FollowersListView v-if="isPremium" />
-        <LockedFeature v-else title="Todos tus seguidores"
-          description="Gestiona y busca entre todos tus seguidores de forma avanzada."
-          :features="['Buscador avanzado', 'Filtros por fecha', 'Exportación de datos']"
-          @open-pricing="showPricing = true" />
+        <LockedFeature v-else title="Todos tus seguidores" description="Gestiona y busca."
+          :features="['Buscador avanzado', 'Filtros por fecha']" @open-pricing="switchTab('pricing')" />
+      </div>
+
+      <div v-else-if="activeTab === 'pricing'" class="view-wrapper fade-in">
+        <PricingView />
+      </div>
+
+      <div v-else-if="activeTab === 'profile'" class="view-wrapper fade-in">
+        <SettingsView @navigate-pricing="switchTab('pricing')" />
       </div>
 
     </main>
-
-    <PricingModal v-if="showPricing" @close="showPricing = false" />
   </div>
 </template>
 

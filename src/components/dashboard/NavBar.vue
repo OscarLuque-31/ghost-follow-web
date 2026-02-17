@@ -1,21 +1,17 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useUser } from '@/composables/useUser'
-// IMPORTAMOS EL NUEVO MODAL
-import SettingsModal from './SettingsModal.vue'
-import PricingModal from './PricingModal.vue'
+
+// Emitimos un evento al Dashboard para que cambie la pestaña
+const emit = defineEmits(['navigate'])
 
 const { user, logout, isPremium } = useUser()
 const showMenu = ref(false)
-
-// Estados de modales
-const showSettings = ref(false)
-const showPricing = ref(false)
-
 const toggleMenu = () => showMenu.value = !showMenu.value
 
-const openSettings = () => {
-  showSettings.value = true
+// Función helper para navegar y cerrar menú
+const navigateTo = (tab: string) => {
+  emit('navigate', tab)
   showMenu.value = false
 }
 </script>
@@ -28,10 +24,8 @@ const openSettings = () => {
       </div>
 
       <div class="user-section" v-if="user">
-        <span v-if="isPremium" class="badge premium">
-          💎 PREMIUM
-        </span>
-        <button v-else class="badge free" @click="showPricing = true">
+        <span v-if="isPremium" class="badge premium">💎 PREMIUM</span>
+        <button v-else class="badge free" @click="navigateTo('pricing')">
           MEJORAR PLAN
         </button>
 
@@ -52,7 +46,7 @@ const openSettings = () => {
             </div>
 
             <div class="menu-body">
-              <button @click="openSettings" class="menu-item">
+              <button @click="navigateTo('profile')" class="menu-item">
                 ⚙️ Configuración y Perfil
               </button>
 
@@ -66,16 +60,14 @@ const openSettings = () => {
         </div>
       </div>
     </div>
-
-    <SettingsModal v-if="showSettings" @close="showSettings = false"
-      @open-pricing="showPricing = true; showSettings = false" />
-
-    <PricingModal v-if="showPricing" @close="showPricing = false" />
   </nav>
 </template>
 
 <style scoped>
-/* GLASSMORPHISM NAVBAR */
+/* COPIA EXACTAMENTE LOS MISMOS ESTILOS QUE TE DI EN EL MENSAJE ANTERIOR */
+/* (Navbar Glassmorphism, badges, dropdown, etc.) */
+/* No han cambiado los estilos CSS, solo la lógica del script */
+
 .navbar {
   position: sticky;
   top: 0;
@@ -128,7 +120,6 @@ const openSettings = () => {
   gap: 1.5rem;
 }
 
-/* BADGES */
 .badge {
   font-size: 0.7rem;
   font-weight: 800;
@@ -158,7 +149,6 @@ const openSettings = () => {
   box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.15);
 }
 
-/* USER BUTTON */
 .relative {
   position: relative;
 }
@@ -223,7 +213,6 @@ const openSettings = () => {
   transform: rotate(180deg);
 }
 
-/* DROPDOWN */
 .dropdown-menu {
   position: absolute;
   right: 0;
