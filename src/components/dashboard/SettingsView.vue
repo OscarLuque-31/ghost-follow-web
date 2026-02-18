@@ -7,7 +7,6 @@ const emit = defineEmits(['navigate-pricing'])
 const { user, isPremium } = useUser()
 const activeTab = ref<'profile' | 'billing' | 'security'>('profile')
 
-// Lógica de contraseña
 const currentPassword = ref('')
 const newPassword = ref('')
 const loadingPass = ref(false)
@@ -38,113 +37,119 @@ const formatDate = (dateString: string) => {
 </script>
 
 <template>
-  <div class="settings-view-container fade-in">
+  <div class="responsive-wrapper">
+    <div class="settings-view-container fade-in">
 
-    <aside class="sidebar">
-      <h2 class="sidebar-title">Ajustes</h2>
-      <nav class="nav-menu">
-        <button @click="activeTab = 'profile'" :class="{ active: activeTab === 'profile' }">
-          <span class="icon">👤</span> Perfil
-        </button>
-        <button @click="activeTab = 'billing'" :class="{ active: activeTab === 'billing' }">
-          <span class="icon">💳</span> Plan
-        </button>
-        <button @click="activeTab = 'security'" :class="{ active: activeTab === 'security' }">
-          <span class="icon">🔒</span> Seguridad
-        </button>
-      </nav>
-    </aside>
+      <aside class="sidebar">
+        <h2 class="sidebar-title">Ajustes</h2>
+        <nav class="nav-menu">
+          <button @click="activeTab = 'profile'" :class="{ active: activeTab === 'profile' }">
+            <span class="icon">👤</span>
+            <span class="text">Perfil</span>
+          </button>
+          <button @click="activeTab = 'billing'" :class="{ active: activeTab === 'billing' }">
+            <span class="icon">💳</span>
+            <span class="text">Plan</span>
+          </button>
+          <button @click="activeTab = 'security'" :class="{ active: activeTab === 'security' }">
+            <span class="icon">🔒</span>
+            <span class="text">Seguridad</span>
+          </button>
+        </nav>
+      </aside>
 
-    <main class="content-area">
+      <main class="content-area">
 
-      <div v-if="activeTab === 'profile'" class="tab-content fade-in">
-        <h3 class="tab-title mobile-hidden">Información Personal</h3>
+        <div v-if="activeTab === 'profile'" class="tab-content fade-in">
+          <h3 class="tab-title mobile-hidden">Información Personal</h3>
 
-        <div class="profile-card">
-          <div class="profile-header">
-            <div class="avatar-large">{{ user?.instagramUserName.charAt(0).toUpperCase() }}</div>
-            <div class="profile-text">
-              <p class="user-fullname">{{ user?.instagramUserName }}</p>
-              <p class="user-email">{{ user?.email }}</p>
-            </div>
-          </div>
-
-          <div class="divider"></div>
-
-          <div class="info-grid">
-            <div class="field">
-              <label>Usuario</label>
-              <div class="input-display">{{ user?.instagramUserName }}</div>
-            </div>
-            <div class="field">
-              <label>Email</label>
-              <div class="input-display">{{ user?.email }}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'billing'" class="tab-content fade-in">
-        <h3 class="tab-title mobile-hidden">Suscripción</h3>
-
-        <div class="plan-card-wrapper" :class="{ 'is-premium': isPremium }">
-          <div class="plan-header">
-            <span class="plan-label">TU PLAN ACTUAL</span>
-            <span class="plan-badge" :class="isPremium ? 'badge-pro' : 'badge-free'">
-              {{ isPremium ? 'PREMIUM 💎' : 'GRATIS' }}
-            </span>
-          </div>
-
-          <div class="plan-body">
-            <div v-if="isPremium && user?.subscription">
-              <p class="renew-text">Renovación automática el:</p>
-              <p class="renew-date">{{ formatDate(user.subscription.currentPeriodEnd) }}</p>
-              <div class="status-active">
-                <span class="dot"></span> Suscripción Activa
+          <div class="card-container">
+            <div class="profile-header">
+              <div class="avatar-large">{{ user?.instagramUserName.charAt(0).toUpperCase() }}</div>
+              <div class="profile-text">
+                <p class="user-fullname">{{ user?.instagramUserName }}</p>
+                <p class="user-email">{{ user?.email }}</p>
               </div>
             </div>
-            <div v-else>
-              <p class="description">Estás en el plan básico. Actualiza para desbloquear todas las funciones.</p>
+
+            <div class="divider desktop-only"></div>
+
+            <div class="info-grid">
+              <div class="field">
+                <label>Usuario</label>
+                <div class="input-display">{{ user?.instagramUserName }}</div>
+              </div>
+              <div class="field">
+                <label>Email</label>
+                <div class="input-display">{{ user?.email }}</div>
+              </div>
             </div>
           </div>
+        </div>
 
-          <div class="plan-footer">
-            <button v-if="!isPremium" class="btn-upgrade" @click="$emit('navigate-pricing')">
-              Mejorar Plan ⭐
-            </button>
-            <button v-else class="btn-manage">
-              Gestionar en Stripe ↗
-            </button>
+        <div v-if="activeTab === 'billing'" class="tab-content fade-in">
+          <h3 class="tab-title mobile-hidden">Suscripción</h3>
+
+          <div class="card-container" :class="{ 'is-premium': isPremium }">
+            <div class="plan-header">
+              <span class="plan-label">ESTADO DEL PLAN</span>
+              <span class="plan-badge" :class="isPremium ? 'badge-pro' : 'badge-free'">
+                {{ isPremium ? 'PREMIUM 💎' : 'GRATIS' }}
+              </span>
+            </div>
+
+            <div class="plan-body">
+              <div v-if="isPremium && user?.subscription">
+                <p class="renew-text">Renovación el:</p>
+                <p class="renew-date">{{ formatDate(user.subscription.currentPeriodEnd) }}</p>
+                <div class="status-active">
+                  <span class="dot"></span> Activo
+                </div>
+              </div>
+              <div v-else>
+                <p class="description">Estás en el plan básico. Actualiza para desbloquear todas las funciones.</p>
+              </div>
+            </div>
+
+            <div class="plan-footer">
+              <button v-if="!isPremium" class="btn-upgrade" @click="$emit('navigate-pricing')">
+                Mejorar Plan ⭐
+              </button>
+              <button v-else class="btn-manage">
+                Gestionar en Stripe ↗
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div v-if="activeTab === 'security'" class="tab-content fade-in">
-        <h3 class="tab-title mobile-hidden">Seguridad</h3>
+        <div v-if="activeTab === 'security'" class="tab-content fade-in">
+          <h3 class="tab-title mobile-hidden">Seguridad</h3>
 
-        <div class="security-card">
-          <form @submit.prevent="handlePasswordChange" class="security-form">
-            <div class="field">
-              <label>Contraseña Actual</label>
-              <input v-model="currentPassword" type="password" placeholder="••••••••" class="input-field" />
-            </div>
-            <div class="field">
-              <label>Nueva Contraseña</label>
-              <input v-model="newPassword" type="password" placeholder="••••••••" class="input-field" />
-            </div>
+          <div class="card-container">
+            <p class="security-intro mobile-only">Actualiza tu contraseña para mantener tu cuenta segura.</p>
+            <form @submit.prevent="handlePasswordChange" class="security-form">
+              <div class="field">
+                <label>Contraseña Actual</label>
+                <input v-model="currentPassword" type="password" placeholder="••••••••" class="input-field" />
+              </div>
+              <div class="field">
+                <label>Nueva Contraseña</label>
+                <input v-model="newPassword" type="password" placeholder="••••••••" class="input-field" />
+              </div>
 
-            <div v-if="msg.text" :class="['message', msg.type]">
-              {{ msg.text }}
-            </div>
+              <div v-if="msg.text" :class="['message', msg.type]">
+                {{ msg.text }}
+              </div>
 
-            <button type="submit" class="btn-save" :disabled="loadingPass || !currentPassword || !newPassword">
-              {{ loadingPass ? 'Guardando...' : 'Actualizar Contraseña' }}
-            </button>
-          </form>
+              <button type="submit" class="btn-save" :disabled="loadingPass || !currentPassword || !newPassword">
+                {{ loadingPass ? 'Guardando...' : 'Actualizar' }}
+              </button>
+            </form>
+          </div>
         </div>
-      </div>
 
-    </main>
+      </main>
+    </div>
   </div>
 </template>
 
@@ -152,6 +157,12 @@ const formatDate = (dateString: string) => {
 /* ========================================= */
 /* 🖥️ ESTILOS ESCRITORIO (Base)              */
 /* ========================================= */
+.responsive-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
 .settings-view-container {
   display: flex;
   width: 100%;
@@ -246,7 +257,7 @@ const formatDate = (dateString: string) => {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.2rem;
 }
 
 .field label {
@@ -273,6 +284,7 @@ const formatDate = (dateString: string) => {
   font-size: 1rem;
   transition: all 0.2s;
   background: #fff;
+  width: 100%;
 }
 
 .input-field:focus {
@@ -300,6 +312,7 @@ const formatDate = (dateString: string) => {
   font-size: 2rem;
   font-weight: bold;
   box-shadow: 0 4px 10px rgba(233, 30, 99, 0.2);
+  flex-shrink: 0;
 }
 
 .user-fullname {
@@ -318,21 +331,19 @@ const formatDate = (dateString: string) => {
   gap: 1rem;
 }
 
-/* BILLING CARD */
-.plan-card-wrapper {
-  border: 1px solid #e2e8f0;
+/* PLAN CARD */
+.card-container {
+  /* En Desktop es transparente */
+}
+
+.card-container.is-premium {
+  background: #fff1f2;
+  border: 1px solid #fbcfe8;
   border-radius: 20px;
   padding: 2rem;
-  background: #f8fafc;
-  position: relative;
-  overflow: hidden;
 }
 
-.plan-card-wrapper.is-premium {
-  background: #fff1f2;
-  border-color: #fbcfe8;
-}
-
+/* Si no es premium en desktop no tiene borde especial, salvo que lo queramos */
 .plan-header {
   display: flex;
   justify-content: space-between;
@@ -475,13 +486,16 @@ const formatDate = (dateString: string) => {
   color: #991b1b;
 }
 
+.mobile-only {
+  display: none;
+}
 
 /* ========================================= */
-/* 📱 OPTIMIZACIONES MÓVILES (Estilo App)    */
+/* 📱 MOBILE OPTIMIZATIONS (Simetría)        */
 /* ========================================= */
 @media (max-width: 768px) {
 
-  /* CONTENEDOR PRINCIPAL: Se vuelve transparente para dejar ver el fondo gris */
+  /* 1. Reset del contenedor principal */
   .settings-view-container {
     flex-direction: column;
     border-radius: 0;
@@ -491,115 +505,128 @@ const formatDate = (dateString: string) => {
     min-height: auto;
   }
 
-  /* BARRA DE NAVEGACIÓN SUPERIOR (Sticky) */
+  /* 2. Barra de Navegación SUPERIOR (Sticky) */
   .sidebar {
     width: 100%;
-    padding: 0.8rem 1rem;
+    padding: 10px 16px;
+    /* Padding seguro */
     background: white;
-    /* Blanco sólido */
     border-right: none;
+    border-bottom: 1px solid #e2e8f0;
     position: sticky;
-    /* Se pega arriba */
     top: 70px;
-    /* Ajustar según tu Navbar principal */
+    /* Ajusta esto si tu navbar principal es más alta */
     z-index: 20;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-    /* Sombra suave para separar */
   }
 
   .sidebar-title {
     display: none;
   }
 
-  /* NAV MENU: Scroll Horizontal (Pills) */
+  /* 3. GRID SIMÉTRICO PARA NAVEGACIÓN */
   .nav-menu {
-    flex-direction: row;
-    overflow-x: auto;
-    gap: 12px;
-    padding: 4px;
-    /* Espacio para la sombra del botón */
-
-    /* Ocultar scrollbar */
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-
-  .nav-menu::-webkit-scrollbar {
-    display: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    /* 3 Columnas iguales */
+    gap: 8px;
+    width: 100%;
   }
 
   .nav-menu button {
-    flex: 0 0 auto;
-    /* No encoger */
-    background: #f1f5f9;
-    padding: 10px 20px;
-    /* Más gorditos */
-    border-radius: 50px;
-    /* Redondos */
-    font-size: 0.9rem;
+    flex-direction: column;
+    /* Icono arriba, texto abajo */
     justify-content: center;
-    box-shadow: none;
+    text-align: center;
+    padding: 8px 4px;
+    font-size: 0.75rem;
+    /* Texto más pequeño para que quepa */
+    background: #f1f5f9;
+    border-radius: 8px;
+    gap: 4px;
+    height: 100%;
+  }
+
+  .nav-menu .icon {
+    font-size: 1.2rem;
+  }
+
+  .nav-menu .text {
+    font-weight: 700;
   }
 
   .nav-menu button.active {
     background: #e91e63;
     color: white;
-    box-shadow: 0 4px 10px rgba(233, 30, 99, 0.3);
+    box-shadow: none;
+    /* Plano para que se vea limpio */
   }
 
-  /* ÁREA DE CONTENIDO */
+  /* 4. ÁREA DE CONTENIDO */
   .content-area {
-    padding: 1.5rem 1rem;
-    background: transparent;
-    /* Transparente para ver el fondo */
+    padding: 20px;
+    /* Margen seguro a los lados */
+    background: #f8fafc;
+    /* Fondo gris claro para contraste */
   }
 
   .mobile-hidden {
     display: none;
   }
 
-  /* Ocultar títulos redundantes */
-
-  /* TARJETAS (Card Style) */
-  /* Aquí convertimos cada sección en una "tarjeta" física con bordes */
-  .profile-card,
-  .plan-card-wrapper,
-  .security-card {
-    background: white;
-    border-radius: 20px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-    border: 1px solid #e2e8f0;
-    /* Borde sutil recuperado */
+  .mobile-only {
+    display: block;
+    color: #64748b;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    text-align: center;
   }
 
-  /* AJUSTES PERFIL MÓVIL */
+  .desktop-only {
+    display: none;
+  }
+
+  /* 5. TARJETAS (Cards) CON BORDES DEFINIDOS */
+  .card-container {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    /* Padding interno de la tarjeta */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid #e2e8f0;
+    /* Borde recuperado */
+    width: 100%;
+  }
+
+  /* Perfil adjustments */
   .profile-header {
     flex-direction: column;
     text-align: center;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
+    gap: 12px;
+    margin-bottom: 20px;
   }
 
   .info-grid {
-    grid-template-columns: 1fr;
+    gap: 12px;
   }
 
-  /* Una columna */
+  /* Inputs y botones full width */
+  .field {
+    width: 100%;
+  }
 
-  /* BOTONES TOUCH-FRIENDLY */
   .input-field,
   .input-display {
-    font-size: 16px;
-    padding: 14px;
+    width: 100%;
+    box-sizing: border-box;
   }
 
-  /* Evita zoom iOS */
-  .btn-save,
+  /* Evita desborde */
+
   .btn-upgrade,
+  .btn-save,
   .btn-manage {
-    padding: 16px;
-    font-size: 1.05rem;
+    width: 100%;
+    margin-top: 1rem;
   }
 }
 
@@ -610,7 +637,7 @@ const formatDate = (dateString: string) => {
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(5px);
   }
 
   to {
