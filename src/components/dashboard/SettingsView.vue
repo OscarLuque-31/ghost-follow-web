@@ -510,6 +510,8 @@ const formatDate = (dateString: string) => {
     flex-direction: column;
     border-radius: 0;
     border: none;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
     box-shadow: none;
     background: transparent;
     min-height: auto;
@@ -517,12 +519,11 @@ const formatDate = (dateString: string) => {
 
   /* 2. Barra Lateral (Ahora superior) */
   .sidebar {
-    width: 100%;
+    width: auto;
     padding: 1rem;
     background: white;
     border-right: none;
     border-bottom: 1px solid #e2e8f0;
-    /* Quitamos sticky si quieres que se mueva con el scroll, o déjalo sticky */
     position: relative;
   }
 
@@ -569,7 +570,8 @@ const formatDate = (dateString: string) => {
     /* Fondo gris para contraste */
     width: 100%;
     box-sizing: border-box;
-    /* IMPORTANTE: Para que el padding no sume al 100% */
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
   }
 
   .mobile-hidden {
