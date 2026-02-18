@@ -7,6 +7,7 @@ const emit = defineEmits(['navigate-pricing'])
 const { user, isPremium } = useUser()
 const activeTab = ref<'profile' | 'billing' | 'security'>('profile')
 
+// Lógica de contraseña
 const currentPassword = ref('')
 const newPassword = ref('')
 const loadingPass = ref(false)
@@ -126,7 +127,7 @@ const formatDate = (dateString: string) => {
           <h3 class="tab-title mobile-hidden">Seguridad</h3>
 
           <div class="card-container">
-            <p class="security-intro mobile-only">Actualiza tu contraseña para mantener tu cuenta segura.</p>
+            <p class="security-intro mobile-only">Gestiona tu acceso</p>
             <form @submit.prevent="handlePasswordChange" class="security-form">
               <div class="field">
                 <label>Contraseña Actual</label>
@@ -258,6 +259,7 @@ const formatDate = (dateString: string) => {
   flex-direction: column;
   gap: 0.6rem;
   margin-bottom: 1.2rem;
+  width: 100%;
 }
 
 .field label {
@@ -275,6 +277,8 @@ const formatDate = (dateString: string) => {
   color: #334155;
   font-weight: 500;
   border: 1px solid #e2e8f0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .input-field {
@@ -285,6 +289,7 @@ const formatDate = (dateString: string) => {
   transition: all 0.2s;
   background: #fff;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .input-field:focus {
@@ -329,11 +334,12 @@ const formatDate = (dateString: string) => {
 .info-grid {
   display: grid;
   gap: 1rem;
+  width: 100%;
 }
 
 /* PLAN CARD */
 .card-container {
-  /* En Desktop es transparente */
+  width: 100%;
 }
 
 .card-container.is-premium {
@@ -343,12 +349,13 @@ const formatDate = (dateString: string) => {
   padding: 2rem;
 }
 
-/* Si no es premium en desktop no tiene borde especial, salvo que lo queramos */
 .plan-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .plan-label {
@@ -474,6 +481,8 @@ const formatDate = (dateString: string) => {
   font-size: 0.9rem;
   text-align: center;
   font-weight: 600;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .message.success {
@@ -490,12 +499,13 @@ const formatDate = (dateString: string) => {
   display: none;
 }
 
+
 /* ========================================= */
-/* 📱 MOBILE OPTIMIZATIONS (Simetría)        */
+/* 📱 MOBILE OPTIMIZATIONS                   */
 /* ========================================= */
 @media (max-width: 768px) {
 
-  /* 1. Reset del contenedor principal */
+  /* 1. Reset del contenedor */
   .settings-view-container {
     flex-direction: column;
     border-radius: 0;
@@ -505,68 +515,61 @@ const formatDate = (dateString: string) => {
     min-height: auto;
   }
 
-  /* 2. Barra de Navegación SUPERIOR (Sticky) */
+  /* 2. Barra Lateral (Ahora superior) */
   .sidebar {
     width: 100%;
-    padding: 10px 16px;
-    /* Padding seguro */
+    padding: 1rem;
     background: white;
     border-right: none;
     border-bottom: 1px solid #e2e8f0;
-    position: sticky;
-    top: 70px;
-    /* Ajusta esto si tu navbar principal es más alta */
-    z-index: 20;
+    /* Quitamos sticky si quieres que se mueva con el scroll, o déjalo sticky */
+    position: relative;
   }
 
   .sidebar-title {
     display: none;
   }
 
-  /* 3. GRID SIMÉTRICO PARA NAVEGACIÓN */
+  /* 3. BOTONES VERTICALES (Uno encima de otro) */
   .nav-menu {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    /* 3 Columnas iguales */
-    gap: 8px;
+    display: flex;
+    flex-direction: column;
+    /* Fila hacia abajo */
     width: 100%;
+    gap: 10px;
   }
 
   .nav-menu button {
-    flex-direction: column;
-    /* Icono arriba, texto abajo */
-    justify-content: center;
-    text-align: center;
-    padding: 8px 4px;
-    font-size: 0.75rem;
-    /* Texto más pequeño para que quepa */
-    background: #f1f5f9;
-    border-radius: 8px;
-    gap: 4px;
-    height: 100%;
-  }
-
-  .nav-menu .icon {
-    font-size: 1.2rem;
-  }
-
-  .nav-menu .text {
-    font-weight: 700;
+    flex-direction: row;
+    /* Icono a la izquierda, texto derecha */
+    justify-content: flex-start;
+    /* Alineado a la izquierda */
+    padding: 14px 16px;
+    /* Botones grandes */
+    width: 100%;
+    /* Ancho completo */
+    background: #f8fafc;
+    border-radius: 12px;
+    font-size: 1rem;
+    border: 1px solid transparent;
   }
 
   .nav-menu button.active {
     background: #e91e63;
     color: white;
-    box-shadow: none;
-    /* Plano para que se vea limpio */
+    box-shadow: 0 4px 10px rgba(233, 30, 99, 0.2);
+    border-color: #e91e63;
   }
 
-  /* 4. ÁREA DE CONTENIDO */
+  /* 4. CONTENIDO AUTOMÁTICO */
   .content-area {
-    padding: 20px;
-    /* Margen seguro a los lados */
+    padding: 1.5rem 1rem;
+    /* Padding lateral seguro */
     background: #f8fafc;
-    /* Fondo gris claro para contraste */
+    /* Fondo gris para contraste */
+    width: 100%;
+    box-sizing: border-box;
+    /* IMPORTANTE: Para que el padding no sume al 100% */
   }
 
   .mobile-hidden {
@@ -585,49 +588,39 @@ const formatDate = (dateString: string) => {
     display: none;
   }
 
-  /* 5. TARJETAS (Cards) CON BORDES DEFINIDOS */
+  /* 5. TARJETAS */
   .card-container {
     background: white;
     border-radius: 16px;
-    padding: 20px;
-    /* Padding interno de la tarjeta */
+    padding: 1.5rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     border: 1px solid #e2e8f0;
-    /* Borde recuperado */
     width: 100%;
+    box-sizing: border-box;
+    /* Evita que se salga */
+    overflow: hidden;
+    /* Corta cualquier hijo que se pase */
   }
 
-  /* Perfil adjustments */
+  /* Ajustes específicos de contenido */
   .profile-header {
     flex-direction: column;
     text-align: center;
-    gap: 12px;
-    margin-bottom: 20px;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .profile-text {
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .info-grid {
-    gap: 12px;
+    grid-template-columns: 1fr;
   }
 
-  /* Inputs y botones full width */
-  .field {
-    width: 100%;
-  }
-
-  .input-field,
-  .input-display {
-    width: 100%;
-    box-sizing: border-box;
-  }
-
-  /* Evita desborde */
-
-  .btn-upgrade,
-  .btn-save,
-  .btn-manage {
-    width: 100%;
-    margin-top: 1rem;
-  }
+  /* 1 Columna */
 }
 
 .fade-in {
