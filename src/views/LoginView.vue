@@ -2,12 +2,14 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '@/services/api';
+import ForgotPasswordModal from '@/components/login/ForgotPasswordModal.vue';
 
 const email = ref('');
 const password = ref('');
 const errorMsg = ref('');
 const isLoading = ref(false);
 const router = useRouter();
+const showForgotPassword = ref(false);
 
 const handleLogin = async () => {
   isLoading.value = true;
@@ -61,6 +63,12 @@ const handleLogin = async () => {
             <input v-model="password" type="password" placeholder="Contraseña" required class="styled-input" />
           </div>
 
+          <div class="forgot-password-link">
+            <button type="button" @click="showForgotPassword = true">
+              ¿Olvidaste tu contraseña?
+            </button>
+          </div>
+
           <button type="submit" class="btn-primary" :disabled="isLoading">
             {{ isLoading ? 'Entrando...' : 'Iniciar Sesión' }}
           </button>
@@ -77,6 +85,9 @@ const handleLogin = async () => {
       </div>
 
     </div>
+
+    <ForgotPasswordModal v-if="showForgotPassword" @close="showForgotPassword = false" />
+
   </div>
 </template>
 
@@ -265,6 +276,29 @@ h1 {
 .styled-input::placeholder {
   color: #d81b60;
   opacity: 0.5;
+}
+
+.forgot-password-link {
+  text-align: right;
+  margin-top: -5px;
+  margin-bottom: 15px;
+  padding-right: 10px;
+}
+
+.forgot-password-link button {
+  background: none;
+  border: none;
+  color: #d81b60;
+  font-size: 0.85em;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s ease;
+}
+
+.forgot-password-link button:hover {
+  color: #880e4f;
+  text-decoration: underline;
 }
 
 .btn-primary {
