@@ -25,7 +25,36 @@ const router = useRouter()
 const route = useRoute()
 const { fetchUser, isPremium, user } = useUser()
 
-// AÑADIMOS 'pricing' y 'profile' al tipo de pestaña
+const paywallContent = {
+  relationships: {
+    title: "¿Quién te ha traicionado? 💔",
+    description: "Toma el control absoluto de tu cuenta. Descubre con exactitud quién dejó de seguirte a tus espaldas y quiénes son tus verdaderos admiradores.",
+    features: [
+      "Detecta al instante quiénes no te devuelven el follow",
+      "Identifica a tus verdaderos Fans (te siguen fielmente, pero tú no a ellos).",
+      "Detecta a tus seguidores Mutuals"
+    ]
+  },
+  history: {
+    title: "Tu evolución al detalle 📈",
+    description: "El crecimiento no es casualidad. Analiza cómo evoluciona tu cuenta en el tiempo, entiende cuándo pierdes seguidores y qué días creces más.",
+    features: [
+      "Gráficas visuales e interactivas de tu crecimiento real.",
+      "Comparativas detalladas mes a mes para detectar patrones.",
+      "Registro histórico ilimitado: nunca pierdas los datos de un análisis previo."
+    ]
+  },
+  list: {
+    title: "Radiografía de tus seguidores 👥",
+    description: "El nivel de detalle que la app oficial te oculta. Organiza, busca y entiende a tu audiencia como un verdadero profesional.",
+    features: [
+      "Revela la fecha exacta en la que cualquier usuario comenzó a seguirte.",
+      "Buscador instantáneo para localizar a personas entre miles de seguidores.",
+      "Segmentación experta mediante filtros por periodos de tiempo."
+    ]
+  }
+}
+
 const activeTab = ref<'analysis' | 'history' | 'list' | 'relationships' | 'pricing' | 'profile'>('analysis')
 const isFirstTime = ref(route.query.welcome === 'true')
 
@@ -94,21 +123,21 @@ const switchTab = (tab: any) => {
 
       <div v-else-if="activeTab === 'relationships'" class="view-wrapper fade-in">
         <RelationshipView v-if="isPremium" />
-        <LockedFeature v-else title="¿Quién te ha traicionado?" description="Descubre quién dejó de seguirte."
-          :features="['Lista de Traidores', 'Lista de Fans', 'Filtrado inteligente']"
+        <LockedFeature v-else :title="paywallContent.relationships.title"
+          :description="paywallContent.relationships.description" :features="paywallContent.relationships.features"
           @open-pricing="switchTab('pricing')" />
       </div>
 
       <div v-else-if="activeTab === 'history'" class="view-wrapper">
         <AnalisysHistory v-if="isPremium" :account-name="user.instagramUserName" />
-        <LockedFeature v-else title="Tu historial completo" description="Viaja en el tiempo."
-          :features="['Gráficas de crecimiento', 'Comparativa mes a mes']" @open-pricing="switchTab('pricing')" />
+        <LockedFeature v-else :title="paywallContent.history.title" :description="paywallContent.history.description"
+          :features="paywallContent.history.features" @open-pricing="switchTab('pricing')" />
       </div>
 
       <div v-else-if="activeTab === 'list'" class="view-wrapper">
         <FollowersListView v-if="isPremium" />
-        <LockedFeature v-else title="Todos tus seguidores" description="Gestiona y busca."
-          :features="['Buscador avanzado', 'Filtros por fecha']" @open-pricing="switchTab('pricing')" />
+        <LockedFeature v-else :title="paywallContent.list.title" :description="paywallContent.list.description"
+          :features="paywallContent.list.features" @open-pricing="switchTab('pricing')" />
       </div>
 
       <div v-else-if="activeTab === 'pricing'" class="view-wrapper fade-in">
@@ -268,20 +297,16 @@ const switchTab = (tab: any) => {
   display: flex;
   align-items: center;
   gap: 6px;
-  /* Para alinear el candado */
 }
 
 .tab-btn.locked {
   color: #94a3b8;
-  /* Color grisáceo */
   cursor: not-allowed;
   opacity: 0.8;
 }
 
-/* Efecto hover diferente para bloqueados */
 .tab-btn.locked:hover {
   background: #f1f5f9;
-  /* Gris claro, no el rosa de activado */
   color: #64748b;
   box-shadow: none;
 }
