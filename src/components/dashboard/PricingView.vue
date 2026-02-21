@@ -17,7 +17,7 @@ const selectPlan = async (plan: string) => {
     })
 
     // 2. Si todo va bien, recibimos la URL de Stripe
-    const checkoutUrl = response.data.url
+    const checkoutUrl = response.data.urlSession
 
     if (checkoutUrl) {
       // 3. Redirigimos al usuario a la página de pago de Stripe
