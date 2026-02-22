@@ -337,11 +337,6 @@ const formatDate = (dateString: string) => {
   width: 100%;
 }
 
-/* PLAN CARD */
-.card-container {
-  width: 100%;
-}
-
 .card-container.is-premium {
   background: #fff1f2;
   border: 1px solid #fbcfe8;
@@ -590,18 +585,14 @@ const formatDate = (dateString: string) => {
     display: none;
   }
 
-  /* 5. TARJETAS */
   .card-container {
     background: white;
     border-radius: 16px;
     padding: 1.5rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     border: 1px solid #e2e8f0;
-    width: 100%;
     box-sizing: border-box;
-    /* Evita que se salga */
     overflow: hidden;
-    /* Corta cualquier hijo que se pase */
   }
 
   /* Ajustes específicos de contenido */
@@ -622,7 +613,6 @@ const formatDate = (dateString: string) => {
     grid-template-columns: 1fr;
   }
 
-  /* 1 Columna */
 }
 
 .fade-in {
