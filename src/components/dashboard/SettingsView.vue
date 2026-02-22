@@ -35,6 +35,28 @@ const formatDate = (dateString: string) => {
   if (!dateString) return 'N/A'
   return new Date(dateString).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })
 }
+
+// Lógica del Portal de Stripe
+const loadingPortal = ref(false)
+
+const handleManageBilling = async () => {
+  loadingPortal.value = true
+  try {
+    const response = await api.post('/payments/customer-portal')
+
+    // Verificamos cómo te llega la URL desde tu SessionResponse
+    const portalUrl = response.data.urlSession || response.data.url
+
+    if (portalUrl) {
+      window.location.href = portalUrl // Adiós a tu app, hola a Stripe
+    }
+  } catch (error) {
+    console.error('Error al abrir el portal de cliente:', error)
+    alert('No se pudo abrir el portal de facturación en este momento. Inténtalo más tarde.')
+  } finally {
+    loadingPortal.value = false
+  }
+}
 </script>
 
 <template>
@@ -101,8 +123,15 @@ const formatDate = (dateString: string) => {
 
             <div class="plan-body">
               <div v-if="isPremium && user?.subscription">
-                <p class="renew-text">Renovación el:</p>
-                <p class="renew-date">{{ formatDate(user.subscription.currentPeriodEnd) }}</p>
+                <template v-if="user.subscription.planType === 'PREMIUM_LIFETIME'">
+                  <p class="renew-text">Tipo de plan:</p>
+                  <p class="renew-date" style="font-size: 1.2rem;">Vitalicio (Para siempre) ♾️</p>
+                </template>
+                <template v-else>
+                  <p class="renew-text">Renovación el:</p>
+                  <p class="renew-date">{{ formatDate(user.subscription.currentPeriodEnd) }}</p>
+                </template>
+
                 <div class="status-active">
                   <span class="dot"></span> Activo
                 </div>
@@ -116,8 +145,8 @@ const formatDate = (dateString: string) => {
               <button v-if="!isPremium" class="btn-upgrade" @click="$emit('navigate-pricing')">
                 Mejorar Plan ⭐
               </button>
-              <button v-else class="btn-manage">
-                Gestionar en Stripe ↗
+              <button v-else class="btn-manage" @click="handleManageBilling" :disabled="loadingPortal">
+                {{ loadingPortal ? 'Abriendo portal...' : 'Gestionar en Stripe ↗' }}
               </button>
             </div>
           </div>
@@ -445,6 +474,15 @@ const formatDate = (dateString: string) => {
   color: #475569;
 }
 
+.btn-manage:hover:not(:disabled) {
+  background: #f8fafc;
+}
+
+.btn-manage:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
 /* SEGURIDAD */
 .btn-save {
   background: #0f172a;
@@ -530,20 +568,15 @@ const formatDate = (dateString: string) => {
   .nav-menu {
     display: flex;
     flex-direction: column;
-    /* Fila hacia abajo */
     width: 100%;
     gap: 10px;
   }
 
   .nav-menu button {
     flex-direction: row;
-    /* Icono a la izquierda, texto derecha */
     justify-content: flex-start;
-    /* Alineado a la izquierda */
     padding: 14px 16px;
-    /* Botones grandes */
     width: 100%;
-    /* Ancho completo */
     background: #f8fafc;
     border-radius: 12px;
     font-size: 1rem;
@@ -560,9 +593,7 @@ const formatDate = (dateString: string) => {
   /* 4. CONTENIDO AUTOMÁTICO */
   .content-area {
     padding: 1.5rem 1rem;
-    /* Padding lateral seguro */
     background: #f8fafc;
-    /* Fondo gris para contraste */
     width: 100%;
     box-sizing: border-box;
     border-bottom-left-radius: 16px;
