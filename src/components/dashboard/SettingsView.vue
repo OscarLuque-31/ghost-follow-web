@@ -2,17 +2,18 @@
 import { ref } from 'vue'
 import { useUser } from '@/composables/useUser'
 import api from '@/services/api'
-import ForgotPasswordModal from '@/components/ForgotPasswordModal.vue'
 
 const emit = defineEmits(['navigate-pricing'])
 const { user, isPremium } = useUser()
 const activeTab = ref<'profile' | 'billing' | 'security'>('profile')
 
-const currentPassword = ref('')
+// --- NUEVA LÓGICA DE SEGURIDAD (Sin contraseña actual, con código al email) ---
+const securityStep = ref(1) // 1: Pedir código, 2: Introducir código y nueva clave
+const code = ref('')
 const newPassword = ref('')
+const confirmPassword = ref('')
 const loadingPass = ref(false)
 const msg = ref({ text: '', type: '' })
-const showForgotModal = ref(false)
 
 const validatePassword = (password: string): string | null => {
   if (password.length < 8) {
@@ -30,16 +31,43 @@ const validatePassword = (password: string): string | null => {
   return null
 }
 
-const handlePasswordChange = async () => {
+// Paso 1: Pedir que se envíe el código al email del usuario autenticado
+const requestPasswordChange = async () => {
   msg.value = { text: '', type: '' }
 
   if (!user.value || !user.value.email) {
-    msg.value = { text: 'Error: No se pudo identificar al usuario. Intenta recargar la página.', type: 'error' }
+    msg.value = { text: 'Error: No se pudo identificar al usuario.', type: 'error' }
     return
   }
 
-  if (currentPassword.value === newPassword.value) {
-    msg.value = { text: 'La nueva contraseña debe ser diferente a la actual.', type: 'error' }
+  loadingPass.value = true
+  try {
+    // Usamos el endpoint que ya tienes para enviar el código de recuperación
+    await api.post('/auth/forgot-password', { email: user.value.email })
+
+    msg.value = { text: 'Código enviado a tu correo. Revisa tu bandeja.', type: 'success' }
+    securityStep.value = 2 // Avanzamos al paso de introducir datos
+
+  } catch (err: any) {
+    msg.value = { text: err.response?.data?.message || 'Error al enviar el código', type: 'error' }
+  } finally {
+    loadingPass.value = false
+  }
+}
+
+// Paso 2: Verificar el código y cambiar la contraseña a la vez
+const handleResetPassword = async () => {
+  msg.value = { text: '', type: '' }
+
+  if (!user.value || !user.value.email) return
+
+  if (code.value.length !== 6) {
+    msg.value = { text: 'El código debe tener 6 dígitos.', type: 'error' }
+    return
+  }
+
+  if (newPassword.value !== confirmPassword.value) {
+    msg.value = { text: 'Las contraseñas no coinciden.', type: 'error' }
     return
   }
 
@@ -51,24 +79,37 @@ const handlePasswordChange = async () => {
 
   loadingPass.value = true
   try {
-    await api.post('/auth/change-password', {
+    // Usamos tu endpoint de reset que verifica el código y guarda la clave a la vez
+    await api.post('/auth/reset-password', {
       email: user.value.email,
-      currentPassword: currentPassword.value,
+      code: code.value,
       newPassword: newPassword.value
     })
 
     msg.value = { text: '¡Contraseña actualizada con éxito!', type: 'success' }
 
-    currentPassword.value = ''
+    // Limpiamos y volvemos al estado inicial
+    code.value = ''
     newPassword.value = ''
+    confirmPassword.value = ''
+    securityStep.value = 1
 
   } catch (err: any) {
-    msg.value = { text: err.response?.data?.message || 'Error al actualizar la contraseña', type: 'error' }
+    msg.value = { text: err.response?.data?.message || 'Código incorrecto o error al cambiar la contraseña.', type: 'error' }
   } finally {
     loadingPass.value = false
   }
 }
 
+const cancelPasswordChange = () => {
+  securityStep.value = 1
+  code.value = ''
+  newPassword.value = ''
+  confirmPassword.value = ''
+  msg.value = { text: '', type: '' }
+}
+
+// --- Lógica del Portal de Stripe ---
 const formatDate = (dateString: string) => {
   if (!dateString) return 'N/A'
   return new Date(dateString).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -205,34 +246,59 @@ const handleManageBilling = async () => {
 
           <div class="card-container">
             <p class="security-intro mobile-only">Gestiona tu acceso</p>
-            <form @submit.prevent="handlePasswordChange" class="security-form">
-              <div class="field">
-                <label>Contraseña Actual</label>
-                <input v-model="currentPassword" type="password" placeholder="••••••••" class="input-field" />
-                <button type="button" class="forgot-link" @click="showForgotModal = true">
-                  ¿Olvidaste tu contraseña actual?
-                </button>
+
+            <div v-if="securityStep === 1" class="security-step-1 fade-in">
+              <p class="security-desc">Para cambiar tu contraseña, enviaremos un código de seguridad a tu correo
+                electrónico
+                registrado.</p>
+
+              <div v-if="msg.text" :class="['message', msg.type]">
+                {{ msg.text }}
               </div>
+
+              <button @click="requestPasswordChange" class="btn-save" :disabled="loadingPass">
+                {{ loadingPass ? 'Enviando...' : 'Cambiar Contraseña' }}
+              </button>
+            </div>
+
+            <form v-else @submit.prevent="handleResetPassword" class="security-form fade-in">
+              <p class="security-desc" style="color: #e91e63; font-weight: 600;">Revisa el correo {{ user?.email }}</p>
+
+              <div class="field">
+                <label>Código de verificación (6 dígitos)</label>
+                <input v-model="code" type="text" maxlength="6" placeholder="••••••" class="input-field code-input" />
+              </div>
+
               <div class="field">
                 <label>Nueva Contraseña</label>
                 <input v-model="newPassword" type="password" placeholder="••••••••" class="input-field" />
+              </div>
+
+              <div class="field">
+                <label>Confirmar Contraseña</label>
+                <input v-model="confirmPassword" type="password" placeholder="••••••••" class="input-field" />
               </div>
 
               <div v-if="msg.text" :class="['message', msg.type]">
                 {{ msg.text }}
               </div>
 
-              <button type="submit" class="btn-save" :disabled="loadingPass || !currentPassword || !newPassword">
-                {{ loadingPass ? 'Guardando...' : 'Actualizar' }}
-              </button>
+              <div class="button-group">
+                <button type="submit" class="btn-save"
+                  :disabled="loadingPass || code.length !== 6 || !newPassword || !confirmPassword">
+                  {{ loadingPass ? 'Guardando...' : 'Confirmar Cambios' }}
+                </button>
+                <button type="button" class="btn-cancel" @click="cancelPasswordChange" :disabled="loadingPass">
+                  Cancelar
+                </button>
+              </div>
             </form>
+
           </div>
         </div>
 
       </main>
     </div>
-
-    <ForgotPasswordModal v-if="showForgotModal" @close="showForgotModal = false" />
   </div>
 </template>
 
@@ -378,6 +444,17 @@ const handleManageBilling = async () => {
   outline: none;
   border-color: #e91e63;
   box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.1);
+}
+
+.code-input {
+  letter-spacing: 0.5em;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.code-input::placeholder {
+  letter-spacing: normal;
+  font-weight: normal;
 }
 
 /* PERFIL */
@@ -537,6 +614,20 @@ const handleManageBilling = async () => {
 }
 
 /* SEGURIDAD */
+.security-desc {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 1.5rem;
+}
+
 .btn-save {
   background: #0f172a;
   color: white;
@@ -545,7 +636,6 @@ const handleManageBilling = async () => {
   border: none;
   font-weight: 700;
   cursor: pointer;
-  margin-top: 1.5rem;
   width: 100%;
   font-size: 1rem;
   transition: background 0.2s;
@@ -558,6 +648,24 @@ const handleManageBilling = async () => {
 .btn-save:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.btn-cancel {
+  background: transparent;
+  color: #64748b;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  font-size: 0.95rem;
+  transition: background 0.2s;
+}
+
+.btn-cancel:hover {
+  background: #f1f5f9;
+  color: #334155;
 }
 
 .message {
@@ -581,25 +689,10 @@ const handleManageBilling = async () => {
   color: #991b1b;
 }
 
-.forgot-link {
-  background: none;
-  border: none;
-  color: #e91e63;
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-align: right;
-  margin-top: 4px;
-  cursor: pointer;
-  padding: 0;
-}
-
-.forgot-link:hover {
-  text-decoration: underline;
-}
-
 .mobile-only {
   display: none;
 }
+
 
 /* ========================================= */
 /* 📱 MOBILE OPTIMIZATIONS                   */
