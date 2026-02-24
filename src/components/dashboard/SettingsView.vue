@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useUser } from '@/composables/useUser'
 import api from '@/services/api'
+import ForgotPasswordModal from '@/components/ForgotPasswordModal.vue'
 
 const emit = defineEmits(['navigate-pricing'])
 const { user, isPremium } = useUser()
@@ -11,6 +12,7 @@ const currentPassword = ref('')
 const newPassword = ref('')
 const loadingPass = ref(false)
 const msg = ref({ text: '', type: '' })
+const showForgotModal = ref(false)
 
 const validatePassword = (password: string): string | null => {
   if (password.length < 8) {
@@ -51,6 +53,7 @@ const handlePasswordChange = async () => {
   try {
     await api.post('/auth/change-password', {
       email: user.value.email,
+      currentPassword: currentPassword.value,
       newPassword: newPassword.value
     })
 
@@ -206,6 +209,9 @@ const handleManageBilling = async () => {
               <div class="field">
                 <label>Contraseña Actual</label>
                 <input v-model="currentPassword" type="password" placeholder="••••••••" class="input-field" />
+                <button type="button" class="forgot-link" @click="showForgotModal = true">
+                  ¿Olvidaste tu contraseña actual?
+                </button>
               </div>
               <div class="field">
                 <label>Nueva Contraseña</label>
@@ -225,6 +231,8 @@ const handleManageBilling = async () => {
 
       </main>
     </div>
+
+    <ForgotPasswordModal v-if="showForgotModal" @close="showForgotModal = false" />
   </div>
 </template>
 
@@ -573,10 +581,25 @@ const handleManageBilling = async () => {
   color: #991b1b;
 }
 
+.forgot-link {
+  background: none;
+  border: none;
+  color: #e91e63;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: right;
+  margin-top: 4px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.forgot-link:hover {
+  text-decoration: underline;
+}
+
 .mobile-only {
   display: none;
 }
-
 
 /* ========================================= */
 /* 📱 MOBILE OPTIMIZATIONS                   */
