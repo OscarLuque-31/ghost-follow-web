@@ -7,7 +7,6 @@ const emit = defineEmits(['navigate-pricing'])
 const { user, isPremium } = useUser()
 const activeTab = ref<'profile' | 'billing' | 'security'>('profile')
 
-// Lógica de contraseña
 const currentPassword = ref('')
 const newPassword = ref('')
 const loadingPass = ref(false)
@@ -36,19 +35,16 @@ const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
-// Lógica del Portal de Stripe
 const loadingPortal = ref(false)
 
 const handleManageBilling = async () => {
   loadingPortal.value = true
   try {
     const response = await api.post('/payments/customer-portal')
-
-    // Verificamos cómo te llega la URL desde tu SessionResponse
     const portalUrl = response.data.urlSession || response.data.url
 
     if (portalUrl) {
-      window.location.href = portalUrl // Adiós a tu app, hola a Stripe
+      window.location.href = portalUrl
     }
   } catch (error) {
     console.error('Error al abrir el portal de cliente:', error)
@@ -123,18 +119,31 @@ const handleManageBilling = async () => {
 
             <div class="plan-body">
               <div v-if="isPremium && user?.subscription">
+
                 <template v-if="user.subscription.planType === 'PREMIUM_LIFETIME'">
                   <p class="renew-text">Tipo de plan:</p>
                   <p class="renew-date" style="font-size: 1.2rem;">Vitalicio (Para siempre) ♾️</p>
-                </template>
-                <template v-else>
-                  <p class="renew-text">Renovación el:</p>
-                  <p class="renew-date">{{ formatDate(user.subscription.currentPeriodEnd) }}</p>
+                  <div class="status-active">
+                    <span class="dot"></span> Activo
+                  </div>
                 </template>
 
-                <div class="status-active">
-                  <span class="dot"></span> Activo
-                </div>
+                <template v-else-if="user.subscription.status === 'CANCELED'">
+                  <p class="renew-text" style="color: #e91e63; font-weight: bold;">Finaliza el:</p>
+                  <p class="renew-date">{{ formatDate(user.subscription.currentPeriodEnd) }}</p>
+                  <div class="status-active" style="background: #fee2e2; color: #991b1b;">
+                    <span class="dot" style="background: #ef4444;"></span> Cancela pronto
+                  </div>
+                </template>
+
+                <template v-else>
+                  <p class="renew-text">Renovación automática el:</p>
+                  <p class="renew-date">{{ formatDate(user.subscription.currentPeriodEnd) }}</p>
+                  <div class="status-active">
+                    <span class="dot"></span> Activo
+                  </div>
+                </template>
+
               </div>
               <div v-else>
                 <p class="description">Estás en el plan básico. Actualiza para desbloquear todas las funciones.</p>
@@ -146,7 +155,7 @@ const handleManageBilling = async () => {
                 Mejorar Plan ⭐
               </button>
               <button v-else class="btn-manage" @click="handleManageBilling" :disabled="loadingPortal">
-                {{ loadingPortal ? 'Abriendo portal...' : 'Gestionar en Stripe ↗' }}
+                {{ loadingPortal ? 'Conectando...' : 'Gestionar en Stripe ↗' }}
               </button>
             </div>
           </div>
@@ -538,7 +547,6 @@ const handleManageBilling = async () => {
 /* ========================================= */
 @media (max-width: 768px) {
 
-  /* 1. Reset del contenedor */
   .settings-view-container {
     flex-direction: column;
     border-radius: 0;
@@ -550,7 +558,6 @@ const handleManageBilling = async () => {
     min-height: auto;
   }
 
-  /* 2. Barra Lateral (Ahora superior) */
   .sidebar {
     width: auto;
     padding: 1rem;
@@ -564,7 +571,6 @@ const handleManageBilling = async () => {
     display: none;
   }
 
-  /* 3. BOTONES VERTICALES (Uno encima de otro) */
   .nav-menu {
     display: flex;
     flex-direction: column;
@@ -590,7 +596,6 @@ const handleManageBilling = async () => {
     border-color: #e91e63;
   }
 
-  /* 4. CONTENIDO AUTOMÁTICO */
   .content-area {
     padding: 1.5rem 1rem;
     background: #f8fafc;
@@ -626,7 +631,6 @@ const handleManageBilling = async () => {
     overflow: hidden;
   }
 
-  /* Ajustes específicos de contenido */
   .profile-header {
     flex-direction: column;
     text-align: center;

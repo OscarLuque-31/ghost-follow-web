@@ -1,9 +1,7 @@
-// src/composables/useUser.ts
 import { ref, computed } from 'vue'
 import api from '@/services/api'
 import { useRouter } from 'vue-router'
 
-// --- TIPOS ---
 export enum PlanType {
   FREE = 'FREE',
   PREMIUM_MONTHLY = 'PREMIUM_MONTHLY',
@@ -12,7 +10,7 @@ export enum PlanType {
 
 export interface Subscription {
   planType: PlanType
-  status: string // 'ACTIVE', 'CANCELED', etc.
+  status: string
   startDate: string
   currentPeriodEnd: string
 }
@@ -23,24 +21,32 @@ export interface User {
   subscription: Subscription
 }
 
-// --- ESTADO GLOBAL ---
 const user = ref<User | null>(null)
 const loadingUser = ref(false)
 
 export function useUser() {
   const router = useRouter()
 
-  // Lógica Maestra: ¿Es Premium?
   const isPremium = computed(() => {
     if (!user.value) return false
+
     const plan = user.value.subscription.planType
     const status = user.value.subscription.status
+    const currentPeriodEnd = user.value.subscription.currentPeriodEnd
 
-    // Es premium si NO es FREE y el estado es ACTIVO
-    return plan !== PlanType.FREE && status === 'ACTIVE'
+    if (plan === PlanType.FREE) return false
+
+    if (status === 'ACTIVE') return true
+
+    if (status === 'CANCELED' && currentPeriodEnd) {
+      const endDate = new Date(currentPeriodEnd)
+      const now = new Date()
+      return endDate > now
+    }
+
+    return false
   })
 
-  // Cargar usuario
   const fetchUser = async () => {
     loadingUser.value = true
     try {
@@ -54,7 +60,6 @@ export function useUser() {
     }
   }
 
-  // Cerrar sesión
   const logout = () => {
     localStorage.removeItem('jwt_token')
     user.value = null
