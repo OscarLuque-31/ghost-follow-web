@@ -12,19 +12,50 @@ const newPassword = ref('')
 const loadingPass = ref(false)
 const msg = ref({ text: '', type: '' })
 
+const validatePassword = (password: string): string | null => {
+  if (password.length < 8) {
+    return 'La contraseña debe tener al menos 8 caracteres.'
+  }
+  if (!/[A-Z]/.test(password)) {
+    return 'La contraseña debe contener al menos una letra mayúscula.'
+  }
+  if (!/[a-z]/.test(password)) {
+    return 'La contraseña debe contener al menos una letra minúscula.'
+  }
+  if (!/[0-9]/.test(password)) {
+    return 'La contraseña debe contener al menos un número.'
+  }
+  return null
+}
+
 const handlePasswordChange = async () => {
-  loadingPass.value = true
   msg.value = { text: '', type: '' }
+
+  if (currentPassword.value === newPassword.value) {
+    msg.value = { text: 'La nueva contraseña debe ser diferente a la actual.', type: 'error' }
+    return
+  }
+
+  const validationError = validatePassword(newPassword.value)
+  if (validationError) {
+    msg.value = { text: validationError, type: 'error' }
+    return
+  }
+
+  loadingPass.value = true
   try {
     await api.post('/auth/change-password', {
       currentPassword: currentPassword.value,
       newPassword: newPassword.value
     })
-    msg.value = { text: '¡Contraseña actualizada!', type: 'success' }
+
+    msg.value = { text: '¡Contraseña actualizada con éxito!', type: 'success' }
+
     currentPassword.value = ''
     newPassword.value = ''
+
   } catch (err: any) {
-    msg.value = { text: err.response?.data?.message || 'Error', type: 'error' }
+    msg.value = { text: err.response?.data?.message || 'Error al actualizar la contraseña', type: 'error' }
   } finally {
     loadingPass.value = false
   }
@@ -132,7 +163,7 @@ const handleManageBilling = async () => {
                   <p class="renew-text" style="color: #e91e63; font-weight: bold;">Finaliza el:</p>
                   <p class="renew-date">{{ formatDate(user.subscription.currentPeriodEnd) }}</p>
                   <div class="status-active" style="background: #fee2e2; color: #991b1b;">
-                    <span class="dot" style="background: #ef4444;"></span> Cancela pronto
+                    <span class="dot" style="background: #ef4444;"></span> Cancelado
                   </div>
                 </template>
 
