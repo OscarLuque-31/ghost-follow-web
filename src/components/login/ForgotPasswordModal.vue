@@ -13,6 +13,22 @@ const confirmPassword = ref('')
 const loading = ref(false)
 const errorMsg = ref('')
 
+const validatePassword = (password: string): string | null => {
+  if (password.length < 8) {
+    return 'La contraseña debe tener al menos 8 caracteres.'
+  }
+  if (!/[A-Z]/.test(password)) {
+    return 'La contraseña debe contener al menos una letra mayúscula.'
+  }
+  if (!/[a-z]/.test(password)) {
+    return 'La contraseña debe contener al menos una letra minúscula.'
+  }
+  if (!/[0-9]/.test(password)) {
+    return 'La contraseña debe contener al menos un número.'
+  }
+  return null
+}
+
 const requestResetCode = async () => {
   if (!email.value) return
   loading.value = true
@@ -54,8 +70,10 @@ const resetPassword = async () => {
     errorMsg.value = 'Las contraseñas no coinciden.'
     return
   }
-  if (newPassword.value.length < 6) {
-    errorMsg.value = 'La contraseña debe tener al menos 6 caracteres.'
+
+  const validationError = validatePassword(newPassword.value)
+  if (validationError) {
+    errorMsg.value = validationError
     return
   }
 

@@ -31,6 +31,11 @@ const validatePassword = (password: string): string | null => {
 const handlePasswordChange = async () => {
   msg.value = { text: '', type: '' }
 
+  if (!user.value || !user.value.email) {
+    msg.value = { text: 'Error: No se pudo identificar al usuario. Intenta recargar la página.', type: 'error' }
+    return
+  }
+
   if (currentPassword.value === newPassword.value) {
     msg.value = { text: 'La nueva contraseña debe ser diferente a la actual.', type: 'error' }
     return
@@ -45,7 +50,7 @@ const handlePasswordChange = async () => {
   loadingPass.value = true
   try {
     await api.post('/auth/change-password', {
-      currentPassword: currentPassword.value,
+      email: user.value.email,
       newPassword: newPassword.value
     })
 
