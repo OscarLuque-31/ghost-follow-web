@@ -142,7 +142,7 @@ const handleRegisterAndUpload = async () => {
 
         <form @submit.prevent="handleRegisterAndUpload">
 
-          <div v-if="!isUserCreated">
+          <div v-if="!isUserCreated" class="form-fields-container">
             <div class="input-wrapper">
               <span class="icon">👤</span>
               <input v-model="accountName" type="text" placeholder="Usuario IG (ej: @tunombre)" required
@@ -160,20 +160,22 @@ const handleRegisterAndUpload = async () => {
                 :class="{ 'input-error': password && !isPasswordValid }" />
             </div>
 
-            <div v-if="password" class="password-checklist fade-in">
-              <p class="requirements-title">Seguridad de la contraseña:</p>
-              <ul>
-                <li :class="{ 'met': passwordRules.length }">
-                  <span class="check-icon">{{ passwordRules.length ? '✅' : '○' }}</span> Mín. 8 caracteres
-                </li>
-                <li :class="{ 'met': passwordRules.uppercase }">
-                  <span class="check-icon">{{ passwordRules.uppercase ? '✅' : '○' }}</span> Una letra mayúscula
-                </li>
-                <li :class="{ 'met': passwordRules.number }">
-                  <span class="check-icon">{{ passwordRules.number ? '✅' : '○' }}</span> Un número
-                </li>
-              </ul>
-            </div>
+            <transition name="expand">
+              <div v-if="password" class="password-checklist">
+                <p class="requirements-title">Seguridad de la contraseña:</p>
+                <ul>
+                  <li :class="{ 'met': passwordRules.length }">
+                    <span class="check-icon">{{ passwordRules.length ? '✅' : '○' }}</span> Mín. 8 caracteres
+                  </li>
+                  <li :class="{ 'met': passwordRules.uppercase }">
+                    <span class="check-icon">{{ passwordRules.uppercase ? '✅' : '○' }}</span> Una letra mayúscula
+                  </li>
+                  <li :class="{ 'met': passwordRules.number }">
+                    <span class="check-icon">{{ passwordRules.number ? '✅' : '○' }}</span> Un número
+                  </li>
+                </ul>
+              </div>
+            </transition>
           </div>
 
           <div v-else class="retry-message fade-in">
@@ -203,9 +205,11 @@ const handleRegisterAndUpload = async () => {
           </button>
         </form>
 
-        <div v-if="statusMsg" :class="['status-box', isError ? 'msg-error' : 'msg-success', 'fade-in']">
-          {{ statusMsg }}
-        </div>
+        <transition name="fade">
+          <div v-if="statusMsg" :class="['status-box', isError ? 'msg-error' : 'msg-success']">
+            {{ statusMsg }}
+          </div>
+        </transition>
 
         <div class="footer-links">
           <p>¿Ya tienes cuenta?</p>
@@ -218,6 +222,11 @@ const handleRegisterAndUpload = async () => {
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* Reset global para evitar problemas de Box Model */
+* {
+  box-sizing: border-box;
+}
 
 .page-root {
   width: 100%;
@@ -241,8 +250,8 @@ const handleRegisterAndUpload = async () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
-  box-sizing: border-box;
+  padding: 1rem;
+  /* Padding reducido en móviles para aprovechar espacio */
 }
 
 .blob {
@@ -286,18 +295,20 @@ const handleRegisterAndUpload = async () => {
   -webkit-backdrop-filter: blur(16px);
   border-radius: 28px;
   border: 1px solid rgba(255, 255, 255, 0.8);
-  padding: 40px 35px;
+  padding: 2.5rem 2rem;
   text-align: center;
   box-shadow: 0 10px 40px -10px rgba(233, 30, 99, 0.2);
   width: 100%;
   max-width: 420px;
   position: relative;
+  /* Evita que el contenido desborde internamente */
+  overflow: hidden;
 }
 
 .back-link {
   position: absolute;
-  top: 25px;
-  left: 25px;
+  top: 1.5rem;
+  left: 1.5rem;
   text-decoration: none;
   color: #9d174d;
   font-size: 0.9em;
@@ -306,6 +317,8 @@ const handleRegisterAndUpload = async () => {
   align-items: center;
   gap: 6px;
   transition: all 0.2s;
+  z-index: 10;
+  /* Asegura que sea clicable siempre */
 }
 
 .back-link:hover {
@@ -315,8 +328,8 @@ const handleRegisterAndUpload = async () => {
 
 .ghost-animation {
   font-size: 3.5em;
-  margin-top: 10px;
-  margin-bottom: 5px;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
   display: inline-block;
   animation: float 3s ease-in-out infinite;
   filter: drop-shadow(0 8px 8px rgba(233, 30, 99, 0.25));
@@ -337,7 +350,7 @@ const handleRegisterAndUpload = async () => {
 h1 {
   margin: 0;
   color: #831843;
-  font-size: 2rem;
+  font-size: 1.8rem;
   font-weight: 800;
   letter-spacing: -0.5px;
 }
@@ -345,31 +358,40 @@ h1 {
 .subtitle {
   color: #be185d;
   margin-top: 5px;
-  margin-bottom: 30px;
+  margin-bottom: 1.5rem;
   font-size: 0.95rem;
   font-weight: 500;
 }
 
+.form-fields-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
 .input-wrapper {
   position: relative;
-  margin-bottom: 16px;
   width: 100%;
 }
 
 .icon {
   position: absolute;
-  left: 18px;
+  left: 1rem;
   top: 50%;
   transform: translateY(-50%);
   font-size: 1.1em;
   color: #9d174d;
   opacity: 0.8;
   pointer-events: none;
+  z-index: 2;
 }
 
 .styled-input {
   width: 100%;
-  padding: 15px 15px 15px 48px;
+  /* Ahora sí funcionará bien gracias al box-sizing: border-box global */
+  padding: 1rem 1rem 1rem 3rem;
+  /* Espacio para el icono a la izquierda */
   border: 2px solid transparent;
   border-radius: 16px;
   font-size: 0.95rem;
@@ -378,13 +400,14 @@ h1 {
   background: white;
   color: #4c1d95;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   outline: none;
 }
 
 .styled-input:focus {
   border-color: #f472b6;
   box-shadow: 0 0 0 4px rgba(244, 114, 182, 0.15);
+  transform: translateY(-1px);
 }
 
 .styled-input::placeholder {
@@ -397,18 +420,37 @@ h1 {
   background-color: #fef2f2 !important;
 }
 
+/* Transición suave para el checklist de contraseña */
+.expand-enter-active,
+.expand-leave-active {
+  transition: all 0.3s ease-in-out;
+  overflow: hidden;
+  max-height: 200px;
+  /* Suficiente para el contenido */
+  opacity: 1;
+}
+
+.expand-enter-from,
+.expand-leave-to {
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-width: 0;
+}
+
 .password-checklist {
   background: white;
-  padding: 16px;
+  padding: 1rem;
   border-radius: 16px;
-  margin-bottom: 20px;
   text-align: left;
   border: 1px solid #fbcfe8;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 .requirements-title {
-  margin: 0 0 10px 0;
+  margin: 0 0 0.5rem 0;
   font-weight: 700;
   color: #be185d;
   font-size: 0.8rem;
@@ -422,13 +464,13 @@ h1 {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .password-checklist li {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
   font-size: 0.85rem;
   font-weight: 500;
   color: #94a3b8;
@@ -447,12 +489,12 @@ h1 {
 
 /* REDISEÑO FILE UPLOAD */
 .upload-container {
-  margin: 10px 0 25px 0;
+  margin: 1rem 0 1.5rem 0;
+  width: 100%;
 }
 
 .file-input-hidden {
   display: none;
-  /* Ocultamos el input feo del navegador */
 }
 
 .file-area {
@@ -461,6 +503,7 @@ h1 {
   border-radius: 20px;
   transition: all 0.3s ease;
   cursor: pointer;
+  width: 100%;
 }
 
 .file-area:hover {
@@ -479,14 +522,14 @@ h1 {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 25px 15px;
+  padding: 1.5rem 1rem;
   cursor: pointer;
   width: 100%;
 }
 
 .file-icon {
   font-size: 2.5em;
-  margin-bottom: 10px;
+  margin-bottom: 0.5rem;
   transition: transform 0.3s;
 }
 
@@ -498,7 +541,7 @@ h1 {
   font-weight: 700;
   font-size: 0.95rem;
   color: #9d174d;
-  margin-bottom: 6px;
+  margin-bottom: 0.3rem;
 }
 
 .file-text code {
@@ -512,6 +555,7 @@ h1 {
 .success-text {
   color: #059669;
   word-break: break-all;
+  /* Evita que nombres de archivo muy largos rompan el diseño */
 }
 
 .file-subtext {
@@ -522,7 +566,7 @@ h1 {
 
 .btn-primary {
   width: 100%;
-  padding: 16px;
+  padding: 1rem;
   background: linear-gradient(135deg, #e91e63 0%, #db2777 100%);
   color: white;
   border: none;
@@ -569,10 +613,21 @@ h1 {
   }
 }
 
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
 .status-box {
   padding: 12px 16px;
   border-radius: 12px;
-  margin-top: 20px;
+  margin-top: 1.2rem;
   font-size: 0.9rem;
   font-weight: 600;
   line-height: 1.4;
@@ -591,7 +646,7 @@ h1 {
 }
 
 .footer-links {
-  margin-top: 30px;
+  margin-top: 1.5rem;
   font-size: 0.9rem;
   color: #64748b;
   font-weight: 500;
@@ -613,9 +668,9 @@ h1 {
 
 .retry-message {
   background: white;
-  padding: 15px;
+  padding: 1rem;
   border-radius: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 1.2rem;
   color: #831843;
   border: 1px solid #fbcfe8;
   display: flex;
@@ -626,7 +681,7 @@ h1 {
 
 .retry-icon {
   font-size: 2em;
-  margin-bottom: 5px;
+  margin-bottom: 0.3rem;
 }
 
 .retry-message p {
@@ -645,6 +700,10 @@ h1 {
   animation: fadeIn 0.4s ease-out forwards;
 }
 
+.fade-in-up {
+  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -657,14 +716,43 @@ h1 {
   }
 }
 
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* RESPONSIVE MEJORADO */
 @media (max-width: 480px) {
+  .scrollable-content {
+    align-items: flex-start;
+    /* En móviles muy pequeños, mejor alinear arriba para evitar cortes */
+    padding-top: 2rem;
+  }
+
   .glass-card {
-    padding: 35px 20px;
+    padding: 2.5rem 1.5rem;
     border-radius: 20px;
   }
 
   h1 {
-    font-size: 1.7rem;
+    font-size: 1.6rem;
+  }
+
+  .back-link {
+    top: 1rem;
+    left: 1rem;
+  }
+
+  .styled-input {
+    font-size: 1rem;
+    /* Evita el zoom automático en iOS Safari */
   }
 }
 </style>
