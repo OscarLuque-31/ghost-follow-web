@@ -4,27 +4,30 @@
 <template>
   <div class="page-root">
 
-    <!-- Fondo: SVG estático, sin blur, sin filter, cero coste GPU -->
+    <!-- Fondo estático: SVG con manchas suaves sin blur ni filter -->
     <div class="bg-canvas" aria-hidden="true">
       <svg class="bg-svg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice"
         xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <radialGradient id="g1" cx="20%" cy="20%" r="60%">
-            <stop offset="0%" stop-color="#ff2d7a" stop-opacity="0.18" />
-            <stop offset="100%" stop-color="#ff2d7a" stop-opacity="0" />
+          <radialGradient id="blob1" cx="15%" cy="15%" r="55%">
+            <stop offset="0%" stop-color="#f9a8d4" stop-opacity="0.85" />
+            <stop offset="100%" stop-color="#fce4ec" stop-opacity="0" />
           </radialGradient>
-          <radialGradient id="g2" cx="85%" cy="80%" r="55%">
-            <stop offset="0%" stop-color="#ff6fa8" stop-opacity="0.14" />
-            <stop offset="100%" stop-color="#ff6fa8" stop-opacity="0" />
+          <radialGradient id="blob2" cx="88%" cy="88%" r="55%">
+            <stop offset="0%" stop-color="#fdf2f8" stop-opacity="0.9" />
+            <stop offset="100%" stop-color="#fce4ec" stop-opacity="0" />
+          </radialGradient>
+          <radialGradient id="blob3" cx="60%" cy="30%" r="35%">
+            <stop offset="0%" stop-color="#fbcfe8" stop-opacity="0.5" />
+            <stop offset="100%" stop-color="#fce4ec" stop-opacity="0" />
           </radialGradient>
         </defs>
-        <rect width="1440" height="900" fill="#0f0a10" />
-        <rect width="1440" height="900" fill="url(#g1)" />
-        <rect width="1440" height="900" fill="url(#g2)" />
-        <circle cx="120" cy="120" r="280" fill="none" stroke="#ff2d7a" stroke-width="1" stroke-opacity="0.08" />
-        <circle cx="120" cy="120" r="420" fill="none" stroke="#ff2d7a" stroke-width="1" stroke-opacity="0.05" />
-        <circle cx="1320" cy="780" r="300" fill="none" stroke="#ff6fa8" stroke-width="1" stroke-opacity="0.07" />
-        <line x1="0" y1="450" x2="1440" y2="420" stroke="#ff2d7a" stroke-width="0.5" stroke-opacity="0.06" />
+        <!-- Base -->
+        <rect width="1440" height="900" fill="#fce4ec" />
+        <!-- Manchas de color, sin filtros -->
+        <rect width="1440" height="900" fill="url(#blob1)" />
+        <rect width="1440" height="900" fill="url(#blob2)" />
+        <rect width="1440" height="900" fill="url(#blob3)" />
       </svg>
     </div>
 
@@ -32,41 +35,24 @@
       <div class="container">
 
         <!-- HERO -->
-        <section class="hero fade-in-up">
-          <div class="hero-badge">
-            <span class="badge-dot"></span>
-            <span>Analíticas de Instagram</span>
-          </div>
+        <section class="card hero fade-in-up">
           <div class="ghost-wrap">
             <span class="ghost">👻</span>
           </div>
-          <h1>Ghost<span class="accent">Follow</span></h1>
-          <p class="tagline">Toma el control absoluto<br>de tu Instagram.</p>
+          <h1>GhostFollow</h1>
+          <p class="tagline">Toma el control absoluto de tu Instagram.</p>
           <p class="sub-tagline">
             Descubre quién te dejó de seguir, quiénes son tus verdaderos fans
             y analiza tu crecimiento con exactitud milimétrica.
           </p>
           <div class="hero-actions">
-            <router-link to="/login" class="btn btn-primary">
-              <span>Entrar al Panel</span>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                  stroke-linejoin="round" />
-              </svg>
-            </router-link>
-            <router-link to="/register" class="btn btn-ghost">Crear Cuenta Gratis</router-link>
-          </div>
-          <div class="hero-stat-row">
-            <div class="stat"><strong>100%</strong><span>seguro</span></div>
-            <div class="stat-divider"></div>
-            <div class="stat"><strong>sin</strong><span>contraseña IG</span></div>
-            <div class="stat-divider"></div>
-            <div class="stat"><strong>&lt;1 min</strong><span>para empezar</span></div>
+            <router-link to="/login" class="btn btn-primary">Entrar al Panel</router-link>
+            <router-link to="/register" class="btn btn-outline">Crear Cuenta Gratis</router-link>
           </div>
         </section>
 
         <!-- FEATURES -->
-        <section class="features fade-in-up" style="--delay: 0.15s">
+        <section class="features fade-in-up" style="--delay: 0.2s">
           <div class="feature-card">
             <div class="feature-icon">💔</div>
             <h3>Fans & Traidores</h3>
@@ -85,31 +71,27 @@
         </section>
 
         <!-- HOW IT WORKS -->
-        <section class="how-it-works fade-in-up" style="--delay: 0.3s">
-          <div class="section-label">Cómo funciona</div>
+        <section class="card how-it-works fade-in-up" style="--delay: 0.3s">
           <h2>Empieza en menos de 1 minuto</h2>
-
           <div class="hiw-grid">
             <div class="steps">
               <div class="step">
-                <div class="step-num">01</div>
+                <span class="step-num">1</span>
                 <div class="step-body">
                   <h4>Regístrate sin tarjeta</h4>
                   <p>Solo necesitas tu email y tu usuario de IG. Es 100% seguro.</p>
                 </div>
               </div>
-              <div class="step-connector"></div>
               <div class="step">
-                <div class="step-num">02</div>
+                <span class="step-num">2</span>
                 <div class="step-body">
                   <h4>Sube tu archivo .zip</h4>
-                  <p>Descarga tus datos oficiales de Instagram y súbelos. <strong>Nosotros no pedimos tu
-                      contraseña.</strong></p>
+                  <p>Descarga tus datos oficiales de Instagram y súbelos. <strong>Nosotros no pedimos tu contraseña de
+                      IG.</strong></p>
                 </div>
               </div>
-              <div class="step-connector"></div>
               <div class="step">
-                <div class="step-num">03</div>
+                <span class="step-num">3</span>
                 <div class="step-body">
                   <h4>Desbloquea el panel</h4>
                   <p>Accede a métricas que la app oficial te oculta. ¡Encuentra a los fantasmas!</p>
@@ -122,26 +104,20 @@
                 <span class="tb-dot tb-red"></span>
                 <span class="tb-dot tb-yellow"></span>
                 <span class="tb-dot tb-green"></span>
-                <span class="terminal-title">ghostfollow — análisis</span>
               </div>
               <div class="terminal-body">
-                <p class="t-line"><span class="t-prompt">$</span> analizando <span
-                    class="t-file">followers.zip</span>...</p>
-                <p class="t-line t-dim">▸ Procesando seguidores...</p>
-                <p class="t-line t-dim">▸ Procesando seguidos...</p>
-                <p class="t-line t-success">✓ 1,204 seguidores encontrados.</p>
-                <p class="t-line t-success">✓ 987 seguidos procesados.</p>
-                <p class="t-line t-alert">⚠ ¡Alerta! 3 usuarios te dejaron de seguir.</p>
-                <p class="t-line t-dim">▸ Generando reporte...</p>
-                <p class="t-line t-success">✓ Dashboard listo. <span class="t-cursor">█</span></p>
+                <p class="t-line"><span class="t-prompt">></span> Analizando followers.zip...</p>
+                <p class="t-line t-success"><span class="t-prompt">></span> 1,204 seguidores encontrados.</p>
+                <p class="t-line t-alert"><span class="t-prompt">></span> ¡Alerta! 3 usuarios te dejaron de seguir.</p>
+                <p class="t-line"><span class="t-prompt">></span> Generando reporte en el Dashboard...</p>
+                <p class="t-line t-success"><span class="t-prompt">></span> Listo.<span class="t-cursor"> █</span></p>
               </div>
             </div>
           </div>
         </section>
 
-        <!-- FOOTER -->
         <footer class="footer fade-in-up" style="--delay: 0.4s">
-          <p>© {{ new Date().getFullYear() }} GhostFollow &mdash; Analíticas seguras y privadas.</p>
+          <p>© {{ new Date().getFullYear() }} GhostFollow. Analíticas seguras y privadas.</p>
         </footer>
 
       </div>
@@ -150,7 +126,7 @@
 </template>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 * {
   box-sizing: border-box;
@@ -159,15 +135,12 @@
 }
 
 .page-root {
-  min-height: 100vh;
   width: 100%;
-  font-family: 'DM Sans', sans-serif;
-  color: #f0e6ec;
-  background: #0f0a10;
-  position: relative;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
 }
 
-/* ── FONDO SVG ESTÁTICO ── sin blur, sin filter, sin animación de filtros */
+/* ── FONDO: SVG fijo, sin blur, sin filter ── */
 .bg-canvas {
   position: fixed;
   inset: 0;
@@ -181,30 +154,35 @@
   display: block;
 }
 
+/* ── LAYOUT ── */
 .page-content {
   position: relative;
   z-index: 1;
-  padding: 2rem 1rem 4rem;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem 1rem;
 }
 
 .container {
-  max-width: 960px;
-  margin: 0 auto;
+  width: 100%;
+  max-width: 900px;
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  gap: 2rem;
 }
 
-/* ── ENTRADA: opacity + transform → compositor-only, cero repaint */
+/* ── ANIMACIONES: solo opacity + transform = cero repaint ── */
 .fade-in-up {
-  animation: fadeInUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: var(--delay, 0s);
 }
 
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(26px);
+    transform: translateY(28px);
   }
 
   to {
@@ -213,75 +191,36 @@
   }
 }
 
+/* ── CARD: sin backdrop-filter — mismo look con fondo opaco + sombra ──
+   El truco: fondo blanco con alta opacidad (0.88) sobre el SVG de colores
+   da visualmente el mismo resultado que glassmorphism, sin ningún coste.  */
+.card {
+  background: rgba(255, 255, 255, 0.88);
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow:
+    0 20px 40px -10px rgba(233, 30, 99, 0.12),
+    0 2px 8px -2px rgba(233, 30, 99, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
 /* ── HERO ── */
 .hero {
+  padding: 4rem 2rem;
   text-align: center;
-  padding: 5rem 2rem 3.5rem;
-  border-radius: 28px;
-  background: #1a1020;
-  border: 1px solid rgba(255, 45, 122, 0.18);
-  box-shadow: 0 0 80px -20px rgba(255, 45, 122, 0.2),
-    0 2px 0 0 rgba(255, 45, 122, 0.18);
-  position: relative;
-  overflow: hidden;
-}
-
-.hero::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 10%;
-  right: 10%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, #ff2d7a, transparent);
-}
-
-.hero-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(255, 45, 122, 0.12);
-  border: 1px solid rgba(255, 45, 122, 0.22);
-  border-radius: 999px;
-  padding: 6px 16px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #ff6fa8;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  margin-bottom: 2rem;
-}
-
-.badge-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #ff2d7a;
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.3;
-  }
 }
 
 .ghost-wrap {
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
 .ghost {
-  font-size: 4.5rem;
+  font-size: 5rem;
   display: inline-block;
   will-change: transform;
-  animation: float 3.5s ease-in-out infinite;
-  filter: drop-shadow(0 8px 20px rgba(255, 45, 122, 0.35));
+  /* eleva solo el fantasma a compositing layer */
+  animation: float 3s ease-in-out infinite;
+  filter: drop-shadow(0 10px 10px rgba(233, 30, 99, 0.2));
 }
 
 @keyframes float {
@@ -292,39 +231,32 @@
   }
 
   50% {
-    transform: translateY(-14px);
+    transform: translateY(-15px);
   }
 }
 
 h1 {
-  font-family: 'Syne', sans-serif;
-  font-size: clamp(3rem, 8vw, 5rem);
+  font-size: 3.5rem;
   font-weight: 800;
-  color: #f0e6ec;
-  letter-spacing: -2px;
-  line-height: 1;
-  margin-bottom: 1.25rem;
-}
-
-.accent {
-  color: #ff2d7a;
+  color: #831843;
+  letter-spacing: -1.5px;
+  margin-bottom: 0.5rem;
 }
 
 .tagline {
-  font-family: 'Syne', sans-serif;
-  font-size: clamp(1.1rem, 3vw, 1.45rem);
+  font-size: 1.4rem;
+  color: #be185d;
   font-weight: 700;
-  color: #ff6fa8;
-  margin-bottom: 1rem;
-  line-height: 1.3;
+  letter-spacing: -0.5px;
+  margin-bottom: 0.5rem;
 }
 
 .sub-tagline {
-  font-size: 1rem;
-  color: #8c7a88;
-  max-width: 500px;
+  font-size: 1.05rem;
+  color: #64748b;
+  max-width: 560px;
   margin: 0 auto 2.5rem;
-  line-height: 1.65;
+  line-height: 1.55;
 }
 
 .hero-actions {
@@ -332,120 +264,72 @@ h1 {
   gap: 1rem;
   justify-content: center;
   flex-wrap: wrap;
-  margin-bottom: 2.5rem;
 }
 
 .btn {
+  padding: 1rem 2rem;
+  border-radius: 16px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 1.05rem;
+  text-decoration: none;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 0.85rem 1.75rem;
-  border-radius: 14px;
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 600;
-  font-size: 0.95rem;
-  text-decoration: none;
+  /* solo transform en hover → compositor, sin repaint */
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .btn-primary {
-  background: #ff2d7a;
+  background: linear-gradient(135deg, #e91e63, #db2777);
   color: #fff;
-  box-shadow: 0 4px 20px rgba(255, 45, 122, 0.35);
+  box-shadow: 0 4px 14px rgba(233, 30, 99, 0.3);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(255, 45, 122, 0.5);
+  box-shadow: 0 8px 22px rgba(233, 30, 99, 0.4);
 }
 
-.btn-ghost {
-  background: transparent;
-  color: #ff6fa8;
-  border: 1px solid rgba(255, 45, 122, 0.22);
+.btn-outline {
+  background: rgba(255, 255, 255, 0.6);
+  color: #db2777;
+  border: 2px solid #f472b6;
 }
 
-.btn-ghost:hover {
+.btn-outline:hover {
   transform: translateY(-2px);
-  background: rgba(255, 45, 122, 0.1);
-  border-color: #ff2d7a;
-}
-
-.hero-stat-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1.5rem;
-}
-
-.stat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-
-.stat strong {
-  font-family: 'Syne', sans-serif;
-  font-size: 1.15rem;
-  color: #f0e6ec;
-  font-weight: 800;
-}
-
-.stat span {
-  font-size: 0.7rem;
-  color: #8c7a88;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-}
-
-.stat-divider {
-  width: 1px;
-  height: 30px;
-  background: rgba(255, 45, 122, 0.18);
+  background: #fce7f3;
+  border-color: #db2777;
 }
 
 /* ── FEATURES ── */
 .features {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1.25rem;
+  gap: 1.5rem;
 }
 
 .feature-card {
-  background: #1a1020;
-  border: 1px solid rgba(255, 45, 122, 0.15);
-  border-radius: 22px;
+  /* sin backdrop-filter: mismo truco de fondo semiopaco */
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: 24px;
   padding: 2rem 1.5rem;
-  position: relative;
-  overflow: hidden;
+  text-align: center;
+  box-shadow: 0 4px 16px -4px rgba(233, 30, 99, 0.08);
+  /* hover: solo transform → GPU, sin repaint */
   transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
-}
-
-.feature-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, #ff6fa8, transparent);
-  opacity: 0;
-  transition: opacity 0.3s ease;
 }
 
 .feature-card:hover {
   transform: translateY(-5px);
-  border-color: rgba(255, 45, 122, 0.4);
-  box-shadow: 0 12px 40px -8px rgba(255, 45, 122, 0.2);
-}
-
-.feature-card:hover::before {
-  opacity: 1;
+  box-shadow: 0 12px 28px -6px rgba(233, 30, 99, 0.18);
+  border-color: #fda4af;
 }
 
 .feature-icon {
-  font-size: 2.2rem;
+  font-size: 3rem;
   margin-bottom: 1rem;
   display: inline-block;
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -456,199 +340,149 @@ h1 {
 }
 
 .feature-card h3 {
-  font-family: 'Syne', sans-serif;
-  color: #f0e6ec;
-  font-size: 1.02rem;
+  font-size: 1.1rem;
   font-weight: 700;
+  color: #831843;
   margin-bottom: 0.5rem;
 }
 
 .feature-card p {
-  color: #8c7a88;
-  font-size: 0.87rem;
+  font-size: 0.9rem;
+  color: #64748b;
   line-height: 1.55;
 }
 
 /* ── HOW IT WORKS ── */
 .how-it-works {
-  background: #1a1020;
-  border: 1px solid rgba(255, 45, 122, 0.18);
-  border-radius: 28px;
   padding: 3rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.how-it-works::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 10%;
-  right: 10%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, #ff2d7a, transparent);
-}
-
-.section-label {
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #ff2d7a;
-  margin-bottom: 0.6rem;
 }
 
 .how-it-works h2 {
-  font-family: 'Syne', sans-serif;
-  font-size: clamp(1.5rem, 4vw, 2.1rem);
+  font-size: 2rem;
   font-weight: 800;
-  color: #f0e6ec;
+  color: #831843;
   letter-spacing: -0.5px;
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem;
+  text-align: center;
 }
 
 .hiw-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 3rem;
-  align-items: start;
+  align-items: center;
 }
 
 .steps {
   display: flex;
   flex-direction: column;
+  gap: 1.5rem;
 }
 
 .step {
   display: flex;
-  gap: 1.25rem;
+  gap: 1.2rem;
   align-items: flex-start;
 }
 
-.step-connector {
-  width: 1px;
-  height: 1.5rem;
-  background: rgba(255, 45, 122, 0.18);
-  margin-left: 19px;
-}
-
 .step-num {
-  font-family: 'Syne', sans-serif;
-  font-size: 0.68rem;
-  font-weight: 800;
-  color: #ff2d7a;
-  background: rgba(255, 45, 122, 0.1);
-  border: 1px solid rgba(255, 45, 122, 0.22);
-  border-radius: 8px;
-  min-width: 38px;
-  height: 30px;
+  background: linear-gradient(135deg, #e91e63, #db2777);
+  color: #fff;
+  width: 35px;
+  height: 35px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  letter-spacing: 0.05em;
+  font-weight: 800;
+  font-size: 1.05rem;
   flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(233, 30, 99, 0.3);
 }
 
 .step-body h4 {
-  font-family: 'Syne', sans-serif;
-  font-size: 0.93rem;
+  font-size: 1rem;
   font-weight: 700;
-  color: #f0e6ec;
-  margin-bottom: 0.25rem;
+  color: #831843;
+  margin-bottom: 0.2rem;
 }
 
 .step-body p {
-  font-size: 0.84rem;
-  color: #8c7a88;
-  line-height: 1.5;
+  font-size: 0.88rem;
+  color: #64748b;
+  line-height: 1.45;
 }
 
 .step-body strong {
-  color: #f0e6ec;
+  color: #be185d;
 }
 
 /* ── TERMINAL ── */
 .terminal {
-  background: #080510;
-  border: 1px solid rgba(255, 45, 122, 0.2);
+  background: #1e293b;
   border-radius: 16px;
   overflow: hidden;
   font-family: 'Courier New', monospace;
-  font-size: 0.81rem;
+  font-size: 0.85rem;
+  box-shadow: 0 20px 30px -8px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  border: 1px solid #0f172a;
 }
 
 .terminal-bar {
-  background: #120a18;
-  border-bottom: 1px solid rgba(255, 45, 122, 0.12);
-  padding: 0.6rem 1rem;
+  background: #0f172a;
+  padding: 0.65rem 1rem;
   display: flex;
-  align-items: center;
   gap: 6px;
+  align-items: center;
 }
 
 .tb-dot {
-  width: 11px;
-  height: 11px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
 }
 
 .tb-red {
-  background: #ff5f57;
+  background: #ef4444;
 }
 
 .tb-yellow {
-  background: #febc2e;
+  background: #eab308;
 }
 
 .tb-green {
-  background: #28c840;
-}
-
-.terminal-title {
-  flex: 1;
-  text-align: center;
-  font-size: 0.7rem;
-  color: #5a4860;
-  font-family: 'DM Sans', sans-serif;
+  background: #22c55e;
 }
 
 .terminal-body {
-  padding: 1.25rem 1.25rem 1.5rem;
+  padding: 1.25rem 1.5rem 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 0.5rem;
+  color: #e2e8f0;
 }
 
 .t-line {
-  color: #c8b8c4;
   line-height: 1.5;
 }
 
-.t-dim {
-  color: #4a3850;
-}
-
 .t-prompt {
-  color: #ff2d7a;
+  color: #db2777;
   font-weight: bold;
   margin-right: 8px;
 }
 
-.t-file {
-  color: #ff6fa8;
-}
-
 .t-success {
-  color: #3dca8a;
+  color: #10b981;
 }
 
 .t-alert {
-  color: #ff6fa8;
+  color: #f43f5e;
   font-weight: bold;
 }
 
 .t-cursor {
-  color: #ff2d7a;
+  color: #db2777;
   animation: blink 1s step-end infinite;
 }
 
@@ -667,19 +501,25 @@ h1 {
 /* ── FOOTER ── */
 .footer {
   text-align: center;
-  color: #5a4860;
-  font-size: 0.85rem;
-  padding-top: 0.5rem;
+  color: #9d174d;
+  opacity: 0.75;
+  font-size: 0.88rem;
+  font-weight: 500;
 }
 
 /* ── RESPONSIVE ── */
 @media (max-width: 768px) {
-  .hero {
-    padding: 3.5rem 1.5rem 3rem;
+  h1 {
+    font-size: 2.6rem;
+    letter-spacing: -1px;
   }
 
-  h1 {
-    letter-spacing: -1px;
+  .tagline {
+    font-size: 1.2rem;
+  }
+
+  .hero {
+    padding: 3rem 1.5rem;
   }
 
   .hero-actions {
@@ -693,6 +533,7 @@ h1 {
 
   .features {
     grid-template-columns: 1fr;
+    gap: 1rem;
   }
 
   .how-it-works {
@@ -709,12 +550,12 @@ h1 {
   }
 }
 
+/* ── ACCESIBILIDAD ── */
 @media (prefers-reduced-motion: reduce) {
 
   .ghost,
-  .badge-dot,
-  .fade-in-up,
-  .t-cursor {
+  .t-cursor,
+  .fade-in-up {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
