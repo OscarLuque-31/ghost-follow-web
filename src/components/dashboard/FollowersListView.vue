@@ -134,7 +134,10 @@ const clearDateFilter = () => {
           </div>
 
           <div class="action-icon">
-            <span class="arrow">↗</span>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
+              stroke="currentColor" class="arrow-svg">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+            </svg>
           </div>
         </a>
       </div>
@@ -159,6 +162,12 @@ const clearDateFilter = () => {
 </template>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
 /* CONTENEDOR PRINCIPAL */
 .list-view-container {
   width: 100%;
@@ -167,6 +176,7 @@ const clearDateFilter = () => {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  font-family: 'Inter', sans-serif;
 }
 
 /* CABECERA */
@@ -394,6 +404,8 @@ const clearDateFilter = () => {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   border: 1px solid #f1f5f9;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.01);
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .follower-card:hover {
@@ -423,6 +435,7 @@ const clearDateFilter = () => {
   flex: 1;
   overflow: hidden;
   gap: 2px;
+  min-width: 0;
 }
 
 .username {
@@ -453,11 +466,13 @@ const clearDateFilter = () => {
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
+  flex-shrink: 0;
 }
 
-.arrow {
+.arrow-svg {
+  width: 16px;
+  height: 16px;
   color: #94a3b8;
-  font-size: 1.1rem;
   transition: transform 0.2s, color 0.2s;
 }
 
@@ -465,10 +480,9 @@ const clearDateFilter = () => {
   background: #fff1f2;
 }
 
-.follower-card:hover .arrow {
+.follower-card:hover .arrow-svg {
   color: #e91e63;
   transform: translate(2px, -2px);
-  /* Pequeño salto hacia arriba a la derecha */
 }
 
 /* BOTÓN CARGAR MÁS */
@@ -572,8 +586,43 @@ const clearDateFilter = () => {
   }
 }
 
-/* MOBILE OPTIMIZATIONS */
+/* ========================================= */
+/* 📱 MOBILE OPTIMIZATIONS                   */
+/* ========================================= */
 @media (max-width: 600px) {
+  .followers-grid {
+    gap: 0.5rem;
+  }
+
+  .follower-card {
+    padding: 0.75rem 1rem;
+    gap: 12px;
+  }
+
+  .avatar-placeholder {
+    width: 38px;
+    height: 38px;
+    font-size: 1rem;
+  }
+
+  .username {
+    font-size: 0.9rem;
+  }
+
+  .date {
+    font-size: 0.7rem;
+  }
+
+  .action-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .arrow-svg {
+    width: 14px;
+    height: 14px;
+  }
+
   .filters-top-row {
     flex-direction: column;
     align-items: stretch;
@@ -596,6 +645,7 @@ const clearDateFilter = () => {
   .filter-select,
   .date-input {
     flex: 1;
+    padding: 10px;
   }
 }
 </style>
