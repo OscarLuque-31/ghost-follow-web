@@ -1,3 +1,95 @@
+<script setup lang="ts">
+</script>
+
+<template>
+  <div class="page-root">
+
+    <div class="fixed-background">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+    </div>
+
+    <div class="scrollable-content fade-in">
+      <div class="content-container">
+
+        <section class="glass-card hero-section fade-in-up">
+          <div class="ghost-animation">👻</div>
+          <h1>GhostFollow</h1>
+          <p class="tagline">Toma el control absoluto de tu Instagram.</p>
+          <p class="sub-tagline">Descubre quién te dejó de seguir, quiénes son tus verdaderos fans y analiza tu
+            crecimiento con exactitud milimétrica.</p>
+
+          <div class="buttons">
+            <router-link to="/login" class="btn btn-primary">Entrar al Panel</router-link>
+            <router-link to="/register" class="btn btn-outline">Crear Cuenta Gratis</router-link>
+          </div>
+        </section>
+
+        <section class="features-grid fade-in-up" style="animation-delay: 0.2s;">
+          <div class="feature-item">
+            <div class="icon">💔</div>
+            <h3>Fans & Traidores</h3>
+            <p>Cruza datos al instante. Detecta quién no te devuelve el follow y quién te sigue fielmente.</p>
+          </div>
+          <div class="feature-item">
+            <div class="icon">📈</div>
+            <h3>Historial Evolutivo</h3>
+            <p>Guarda tus reportes en la nube. Compara tu crecimiento real mes a mes sin perder datos.</p>
+          </div>
+          <div class="feature-item">
+            <div class="icon">🔔</div>
+            <h3>Alertas por Email</h3>
+            <p>Recibe notificaciones automáticas y resúmenes directos a tu correo al instante.</p>
+          </div>
+        </section>
+
+        <section class="how-it-works glass-card-light fade-in-up" style="animation-delay: 0.3s;">
+          <h2>Empieza en menos de 1 minuto</h2>
+          <div class="steps-container">
+            <div class="steps">
+              <div class="step">
+                <span class="step-num">1</span>
+                <div class="step-text">
+                  <h4>Regístrate sin tarjeta</h4>
+                  <p>Solo necesitas tu email y tu usuario de IG. Es 100% seguro.</p>
+                </div>
+              </div>
+              <div class="step">
+                <span class="step-num">2</span>
+                <div class="step-text">
+                  <h4>Sube tu archivo .zip</h4>
+                  <p>Descarga tus datos oficiales de Instagram y súbelos. <b>Nosotros no pedimos tu contraseña de
+                      IG.</b></p>
+                </div>
+              </div>
+              <div class="step">
+                <span class="step-num">3</span>
+                <div class="step-text">
+                  <h4>Desbloquea el panel</h4>
+                  <p>Accede a métricas que la app oficial te oculta. ¡Encuentra a los fantasmas!</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="code-preview">
+              <div class="mac-buttons"><span></span><span></span><span></span></div>
+              <p class="code-line"><span class="prompt">></span> Analizando followers.zip...</p>
+              <p class="code-line success"><span class="prompt">></span> 1,204 seguidores encontrados.</p>
+              <p class="code-line alert"><span class="prompt">></span> ¡Alerta! 3 usuarios te dejaron de seguir.</p>
+              <p class="code-line"><span class="prompt">></span> Generando reporte en el Dashboard...</p>
+            </div>
+          </div>
+        </section>
+
+        <footer class="simple-footer fade-in">
+          <p>© {{ new Date().getFullYear() }} GhostFollow. Analíticas seguras y privadas.</p>
+        </footer>
+
+      </div>
+    </div>
+  </div>
+</template>
+
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 

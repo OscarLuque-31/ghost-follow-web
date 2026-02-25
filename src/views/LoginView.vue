@@ -42,7 +42,11 @@ const handleLogin = async () => {
     <div class="scrollable-content">
       <div class="glass-card fade-in-up">
         <router-link to="/" class="back-link">
-          <span class="arrow">←</span> Inicio
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
+            stroke="currentColor" class="back-icon">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+          </svg>
+          Inicio
         </router-link>
 
         <div class="ghost-animation">👻</div>
@@ -200,14 +204,24 @@ const handleLogin = async () => {
   display: flex;
   align-items: center;
   gap: 6px;
-  transition: all 0.2s;
+  transition: color 0.2s;
   z-index: 10;
 }
 
 .back-link:hover {
-  transform: translateX(-4px);
   color: #be185d;
 }
+
+.back-icon {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.back-link:hover .back-icon {
+  transform: translateX(-4px);
+}
+
 
 .ghost-animation {
   font-size: 3.5em;

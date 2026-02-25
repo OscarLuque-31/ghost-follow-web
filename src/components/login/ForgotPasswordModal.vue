@@ -135,7 +135,13 @@ const goBack = (toStep: number) => {
             {{ loading ? 'Verificando...' : 'Verificar Código' }}
           </button>
         </form>
-        <button class="btn-text" @click="goBack(1)" :disabled="loading">← Usar otro correo</button>
+        <button class="btn-text back-step" @click="goBack(1)" :disabled="loading">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
+            stroke="currentColor" class="back-icon">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+          </svg>
+          Usar otro correo
+        </button>
       </div>
 
       <div v-else-if="step === 3" class="step-container">
@@ -423,21 +429,21 @@ h2 {
   margin-top: 1.5rem;
 }
 
-.btn-text {
-  background: none;
-  border: none;
-  color: #64748b;
-  font-weight: 600;
-  font-size: 0.9rem;
-  margin-top: 1.5rem;
-  cursor: pointer;
-  transition: color 0.2s;
-  font-family: 'Inter', sans-serif;
+.back-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
-.btn-text:hover:not(:disabled) {
-  color: #db2777;
-  text-decoration: underline;
+.back-icon {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.2s;
+}
+
+.btn-text:hover:not(:disabled) .back-icon {
+  transform: translateX(-4px);
 }
 
 .loader {

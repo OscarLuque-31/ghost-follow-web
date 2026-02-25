@@ -133,7 +133,13 @@ const switchTab = (tab: any) => {
           <FileUploader v-if="!showResults" :is-loading="isLoading" :loading-text="loadingText"
             :parent-message="apiError" @upload="handleUpload" />
           <div v-else class="results-dashboard fade-in">
-            <button @click="resetAnalysis" class="btn-back">← Analizar otro archivo</button>
+            <button @click="resetAnalysis" class="btn-back">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
+                stroke="currentColor" class="back-icon">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+              </svg>
+              Analizar otro archivo
+            </button>
             <div v-if="analysisResults" class="analysis-content">
               <StatsCards :stats="analysisResults.stats" />
               <FollowerLists :new-followers="analysisResults.newFollowers"
@@ -338,10 +344,25 @@ const switchTab = (tab: any) => {
   margin-bottom: -1rem;
   font-size: 0.95rem;
   transition: color 0.2s;
+  /* Nuevo para el SVG */
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
 }
 
 .btn-back:hover {
   color: #e91e63;
+}
+
+.back-icon {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.2s;
+}
+
+.btn-back:hover .back-icon {
+  transform: translateX(-4px);
 }
 
 .fade-in {
