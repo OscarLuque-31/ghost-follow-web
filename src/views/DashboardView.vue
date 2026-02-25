@@ -192,7 +192,7 @@ const switchTab = (tab: any) => {
 .dashboard-container {
   font-family: 'Inter', sans-serif;
   min-height: 100vh;
-  background-color: #fdf2f8;
+  background-color: #fce4ec;
   background-image: radial-gradient(at 0% 0%, hsla(334, 97%, 92%, 1) 0, transparent 50%),
     radial-gradient(at 100% 100%, hsla(265, 100%, 93%, 1) 0, transparent 50%);
   color: #2c3e50;
