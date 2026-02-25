@@ -21,13 +21,12 @@ const passwordRules = computed(() => {
     length: pwd.length >= 8,
     uppercase: /[A-Z]/.test(pwd),
     number: /[0-9]/.test(pwd),
-    special: /[@$!%*?&._-]/.test(pwd)
   };
 });
 
 const isPasswordValid = computed(() => {
   const r = passwordRules.value;
-  return r.length && r.uppercase && r.number && r.special;
+  return r.length && r.uppercase && r.number;
 });
 
 const handleFileUpload = (event: Event) => {
@@ -177,9 +176,6 @@ const handleRegisterAndUpload = async () => {
                 <li :class="{ 'met': passwordRules.number }">
                   <span class="check-icon">{{ passwordRules.number ? '✅' : '○' }}</span> Un número
                 </li>
-                <li :class="{ 'met': passwordRules.special }">
-                  <span class="check-icon">{{ passwordRules.special ? '✅' : '○' }}</span> Símbolo (@$!%*?&._-)
-                </li>
               </ul>
             </div>
           </div>
@@ -191,7 +187,7 @@ const handleRegisterAndUpload = async () => {
 
           <div class="file-area">
             <div class="file-icon">📂</div>
-            <label>Sube <code>followers_1.json</code></label>
+            <label>Sube <code>instagram_data.zip</code></label>
             <input type="file" @change="handleFileUpload" accept=".json" class="file-input" required />
           </div>
 
