@@ -102,7 +102,13 @@
   font-family: 'Inter', sans-serif;
 }
 
-/* 1. Fondo fijo con aceleración de hardware */
+/* ─── FONDO FIJO ─────────────────────────────────────────────────────────────
+   Los blobs usan translate3d para quedarse en la capa GPU.
+   filter:blur se aplica SOLO a los blobs, no a sus padres.
+   Añadimos isolation:isolate al contenedor para que el stacking
+   context esté contenido y no obligue al navegador a rasterizar toda
+   la página en cada frame.
+─────────────────────────────────────────────────────────────────────────────*/
 .fixed-background {
   position: fixed;
   top: 0;
@@ -112,8 +118,8 @@
   background: linear-gradient(135deg, #fce4ec 0%, #fbcfe8 100%);
   z-index: -1;
   overflow: hidden;
-  transform: translateZ(0);
-  will-change: transform;
+  isolation: isolate;
+  /* nuevo stacking context → evita repaints globales */
 }
 
 .scrollable-content {
@@ -134,32 +140,49 @@
   margin: 0 auto;
 }
 
-/* 2. Manchas con aceleración gráfica (translate3d) */
+/* ─── BLOBS ──────────────────────────────────────────────────────────────────
+   CLAVE: los blobs tienen su propio will-change:transform para que el
+   navegador los eleve a una compositing layer independiente.
+   Así la animación no fuerza un repaint del resto de la página.
+   Se reduce el blur de 80px → 60px (menos costoso, mismo efecto visual).
+─────────────────────────────────────────────────────────────────────────────*/
 .blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.6;
-  animation: moveBlob 12s infinite alternate ease-in-out;
-  transform: translate3d(0, 0, 0);
+  filter: blur(60px);
+  /* reducido de 80px → 60px */
+  opacity: 0.55;
   will-change: transform;
+  /* solo transform, es el único que se anima */
+  animation: moveBlob 14s infinite alternate ease-in-out;
 }
 
 .blob-1 {
-  width: 70vw;
-  height: 70vw;
+  width: 65vw;
+  /* ligeramente más pequeño */
+  height: 65vw;
   background-color: #f9a8d4;
   top: -10%;
   left: -10%;
 }
 
 .blob-2 {
-  width: 60vw;
-  height: 60vw;
+  width: 55vw;
+  height: 55vw;
   background-color: #fdf2f8;
   bottom: -10%;
   right: -10%;
-  animation-delay: -6s;
+  animation-delay: -7s;
+}
+
+@keyframes moveBlob {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  100% {
+    transform: translate3d(25px, 25px, 0) scale(1.04);
+  }
 }
 
 @keyframes float {
@@ -174,17 +197,13 @@
   }
 }
 
-@keyframes moveBlob {
-  0% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-
-  100% {
-    transform: translate3d(30px, 30px, 0) scale(1.05);
-  }
-}
-
-/* 3. Tarjetas de cristal optimizadas */
+/* ─── TARJETAS DE CRISTAL ───────────────────────────────────────────────────
+   PROBLEMA ORIGINAL: backdrop-filter en elementos con animaciones activas
+   (fade-in-up) forzaba rasterizaciones en cada frame.
+   SOLUCIÓN: Las tarjetas NO llevan will-change. Solo se eleva a GPU la
+   capa del fondo desenfocado una vez pintada. Usamos contain:layout style
+   para aislar el layout y evitar repaints en cascada.
+─────────────────────────────────────────────────────────────────────────────*/
 .glass-card {
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(16px);
@@ -194,9 +213,9 @@
   padding: 4rem 2rem;
   text-align: center;
   box-shadow: 0 20px 40px -10px rgba(233, 30, 99, 0.15);
-  overflow: hidden;
-  transform: translateZ(0);
-  will-change: transform, backdrop-filter;
+  contain: layout style;
+  /* evita repaints en cascada */
+  /* SIN will-change aquí — era incorrecto y costoso */
 }
 
 .ghost-animation {
@@ -205,6 +224,8 @@
   display: inline-block;
   animation: float 3s ease-in-out infinite;
   filter: drop-shadow(0 10px 10px rgba(233, 30, 99, 0.2));
+  will-change: transform;
+  /* solo el fantasma, no toda la tarjeta */
 }
 
 h1 {
@@ -245,11 +266,13 @@ h1 {
   text-decoration: none;
   border-radius: 16px;
   font-weight: 700;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   font-size: 1.05rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  /* Usamos transform en hover → compositing layer, no repaint */
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn-primary {
@@ -283,30 +306,30 @@ h1 {
 }
 
 .feature-item {
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.75);
+  /* backdrop-filter solo en desktop y con prefers-reduced-motion desactivado */
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.9);
   padding: 2rem 1.5rem;
   border-radius: 24px;
   text-align: center;
-  transition: all 0.3s ease;
   box-shadow: 0 4px 15px -5px rgba(0, 0, 0, 0.05);
-  transform: translateZ(0);
-  will-change: transform, backdrop-filter;
+  contain: layout style;
+  /* El hover solo mueve transform → GPU, sin repaint */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .feature-item:hover {
-  transform: translate3d(0, -5px, 0);
-  background: rgba(255, 255, 255, 0.95);
+  transform: translateY(-5px);
   box-shadow: 0 10px 25px -5px rgba(233, 30, 99, 0.15);
+  /* Eliminado el cambio de background en hover → era un repaint */
 }
 
 .icon {
   font-size: 3rem;
   margin-bottom: 1rem;
   display: inline-block;
-  transform-origin: bottom center;
   transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
@@ -337,8 +360,7 @@ h1 {
   border: 1px solid rgba(255, 255, 255, 0.8);
   padding: 3rem;
   box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.05);
-  transform: translateZ(0);
-  will-change: transform, backdrop-filter;
+  contain: layout style;
 }
 
 .glass-card-light h2 {
@@ -398,14 +420,20 @@ h1 {
   line-height: 1.4;
 }
 
-/* ANIMACIONES Y UTILIDADES */
+/* ─── ANIMACIONES DE ENTRADA ────────────────────────────────────────────────
+   fade-in-up: animamos opacity + transform juntos.
+   Ambas propiedades son compositor-friendly (no causan repaint).
+   La tarjeta NO tiene backdrop-filter activo durante la animación porque
+   el navegador esperará a que termine antes de hacer el composite final.
+   → Si necesitas backdrop-filter Y animación simultáneos, lo ideal es
+     tener un pseudo-elemento ::before con el blur y animar solo el wrapper.
+─────────────────────────────────────────────────────────────────────────────*/
 .fade-in {
-  animation: fadeIn 0.4s ease-out forwards;
+  animation: fadeIn 0.4s ease-out both;
 }
 
 .fade-in-up {
-  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  opacity: 0;
+  animation: fadeInUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes fadeIn {
@@ -421,7 +449,7 @@ h1 {
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translate3d(0, 30px, 0);
+    transform: translate3d(0, 24px, 0);
   }
 
   to {
@@ -496,7 +524,7 @@ h1 {
   margin-top: 2rem;
 }
 
-/* RESPONSIVE */
+/* ─── RESPONSIVE ─────────────────────────────────────────────────────────────*/
 @media (max-width: 768px) {
   h1 {
     font-size: 2.8rem;
@@ -528,19 +556,37 @@ h1 {
     display: none;
   }
 
-  /* Ocultar terminal en móvil para ahorrar espacio */
-
   .glass-card,
   .glass-card-light {
     padding: 2.5rem 1.5rem;
     border-radius: 20px;
   }
 
-  /* 4. APAGAR ANIMACIONES EN MÓVIL PARA MAX FPS */
+  /* Apagar blobs en móvil */
   .blob {
+    animation: none;
+  }
+
+  /* En móvil quitamos backdrop-filter: ahorra batería y elimina jank */
+  .glass-card,
+  .glass-card-light,
+  .feature-item {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(255, 255, 255, 0.92);
+  }
+}
+
+/* ─── ACCESIBILIDAD: respetar preferencias del usuario ───────────────────────*/
+@media (prefers-reduced-motion: reduce) {
+
+  .blob,
+  .ghost-animation,
+  .fade-in,
+  .fade-in-up {
     animation: none !important;
-    /* Al quitar la animación, forzamos un repintado estático final */
-    transform: translateZ(0);
+    opacity: 1 !important;
+    transform: none !important;
   }
 }
 </style>
