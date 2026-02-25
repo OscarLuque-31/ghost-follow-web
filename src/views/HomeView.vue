@@ -1,95 +1,3 @@
-<script setup lang="ts">
-</script>
-
-<template>
-  <div class="page-root">
-
-    <div class="fixed-background">
-      <div class="blob blob-1"></div>
-      <div class="blob blob-2"></div>
-    </div>
-
-    <div class="scrollable-content fade-in">
-      <div class="content-container">
-
-        <section class="glass-card hero-section fade-in-up">
-          <div class="ghost-animation">👻</div>
-          <h1>GhostFollow</h1>
-          <p class="tagline">Toma el control absoluto de tu Instagram.</p>
-          <p class="sub-tagline">Descubre quién te dejó de seguir, quiénes son tus verdaderos fans y analiza tu
-            crecimiento con exactitud milimétrica.</p>
-
-          <div class="buttons">
-            <router-link to="/login" class="btn btn-primary">Entrar al Panel</router-link>
-            <router-link to="/register" class="btn btn-outline">Crear Cuenta Gratis</router-link>
-          </div>
-        </section>
-
-        <section class="features-grid fade-in-up" style="animation-delay: 0.2s;">
-          <div class="feature-item">
-            <div class="icon">💔</div>
-            <h3>Fans & Traidores</h3>
-            <p>Cruza datos al instante. Detecta quién no te devuelve el follow y quién te sigue fielmente.</p>
-          </div>
-          <div class="feature-item">
-            <div class="icon">📈</div>
-            <h3>Historial Evolutivo</h3>
-            <p>Guarda tus reportes en la nube. Compara tu crecimiento real mes a mes sin perder datos.</p>
-          </div>
-          <div class="feature-item">
-            <div class="icon">🔔</div>
-            <h3>Alertas por Email</h3>
-            <p>Recibe notificaciones automáticas y resúmenes directos a tu correo al instante.</p>
-          </div>
-        </section>
-
-        <section class="how-it-works glass-card-light fade-in-up" style="animation-delay: 0.3s;">
-          <h2>Empieza en menos de 1 minuto</h2>
-          <div class="steps-container">
-            <div class="steps">
-              <div class="step">
-                <span class="step-num">1</span>
-                <div class="step-text">
-                  <h4>Regístrate sin tarjeta</h4>
-                  <p>Solo necesitas tu email y tu usuario de IG. Es 100% seguro.</p>
-                </div>
-              </div>
-              <div class="step">
-                <span class="step-num">2</span>
-                <div class="step-text">
-                  <h4>Sube tu archivo .zip</h4>
-                  <p>Descarga tus datos oficiales de Instagram y súbelos. <b>Nosotros no pedimos tu contraseña de
-                      IG.</b></p>
-                </div>
-              </div>
-              <div class="step">
-                <span class="step-num">3</span>
-                <div class="step-text">
-                  <h4>Desbloquea el panel</h4>
-                  <p>Accede a métricas que la app oficial te oculta. ¡Encuentra a los fantasmas!</p>
-                </div>
-              </div>
-            </div>
-
-            <div class="code-preview">
-              <div class="mac-buttons"><span></span><span></span><span></span></div>
-              <p class="code-line"><span class="prompt">></span> Analizando followers.zip...</p>
-              <p class="code-line success"><span class="prompt">></span> 1,204 seguidores encontrados.</p>
-              <p class="code-line alert"><span class="prompt">></span> ¡Alerta! 3 usuarios te dejaron de seguir.</p>
-              <p class="code-line"><span class="prompt">></span> Generando reporte en el Dashboard...</p>
-            </div>
-          </div>
-        </section>
-
-        <footer class="simple-footer fade-in">
-          <p>© {{ new Date().getFullYear() }} GhostFollow. Analíticas seguras y privadas.</p>
-        </footer>
-
-      </div>
-    </div>
-  </div>
-</template>
-
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
@@ -102,6 +10,7 @@
   font-family: 'Inter', sans-serif;
 }
 
+/* 1. Fondo fijo con aceleración de hardware */
 .fixed-background {
   position: fixed;
   top: 0;
@@ -111,6 +20,8 @@
   background: linear-gradient(135deg, #fce4ec 0%, #fbcfe8 100%);
   z-index: -1;
   overflow: hidden;
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .scrollable-content {
@@ -131,13 +42,15 @@
   margin: 0 auto;
 }
 
-/* BACKGROUND BLOBS */
+/* 2. Manchas con aceleración gráfica (translate3d) */
 .blob {
   position: absolute;
   border-radius: 50%;
   filter: blur(80px);
   opacity: 0.6;
   animation: moveBlob 12s infinite alternate ease-in-out;
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
 }
 
 .blob-1 {
@@ -161,25 +74,25 @@
 
   0%,
   100% {
-    transform: translateY(0px);
+    transform: translate3d(0, 0px, 0);
   }
 
   50% {
-    transform: translateY(-15px);
+    transform: translate3d(0, -15px, 0);
   }
 }
 
 @keyframes moveBlob {
   0% {
-    transform: translate(0, 0) scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
   }
 
   100% {
-    transform: translate(30px, 30px) scale(1.05);
+    transform: translate3d(30px, 30px, 0) scale(1.05);
   }
 }
 
-/* HERO SECTION */
+/* 3. Tarjetas de cristal optimizadas */
 .glass-card {
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(16px);
@@ -190,6 +103,8 @@
   text-align: center;
   box-shadow: 0 20px 40px -10px rgba(233, 30, 99, 0.15);
   overflow: hidden;
+  transform: translateZ(0);
+  will-change: transform, backdrop-filter;
 }
 
 .ghost-animation {
@@ -278,16 +193,19 @@ h1 {
 .feature-item {
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.9);
   padding: 2rem 1.5rem;
   border-radius: 24px;
   text-align: center;
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px -5px rgba(0, 0, 0, 0.05);
+  transform: translateZ(0);
+  will-change: transform, backdrop-filter;
 }
 
 .feature-item:hover {
-  transform: translateY(-5px);
+  transform: translate3d(0, -5px, 0);
   background: rgba(255, 255, 255, 0.95);
   box-shadow: 0 10px 25px -5px rgba(233, 30, 99, 0.15);
 }
@@ -322,10 +240,13 @@ h1 {
 .glass-card-light {
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-radius: 28px;
   border: 1px solid rgba(255, 255, 255, 0.8);
   padding: 3rem;
   box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.05);
+  transform: translateZ(0);
+  will-change: transform, backdrop-filter;
 }
 
 .glass-card-light h2 {
@@ -408,12 +329,12 @@ h1 {
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translate3d(0, 30px, 0);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
   }
 }
 
@@ -521,6 +442,13 @@ h1 {
   .glass-card-light {
     padding: 2.5rem 1.5rem;
     border-radius: 20px;
+  }
+
+  /* 4. APAGAR ANIMACIONES EN MÓVIL PARA MAX FPS */
+  .blob {
+    animation: none !important;
+    /* Al quitar la animación, forzamos un repintado estático final */
+    transform: translateZ(0);
   }
 }
 </style>
