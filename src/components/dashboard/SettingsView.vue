@@ -677,6 +677,7 @@ const handleManageBilling = async () => {
   font-weight: 600;
   width: 100%;
   box-sizing: border-box;
+  margin-bottom: 20px;
 }
 
 .message.success {
