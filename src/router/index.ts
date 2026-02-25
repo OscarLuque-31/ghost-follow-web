@@ -32,6 +32,12 @@ const router = createRouter({
       component: DashboardView,
       meta: { requiresAuth: true },
     },
+    {
+      path: '/success',
+      name: 'Success',
+      component: () => import('@/views/SuccessView.vue'),
+      meta: { requiresAuth: true },
+    },
   ],
 })
 
