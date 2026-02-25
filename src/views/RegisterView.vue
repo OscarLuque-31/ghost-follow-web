@@ -6,14 +6,10 @@ import api from '@/services/api';
 const accountName = ref('');
 const email = ref('');
 const password = ref('');
-const file = ref<File | null>(null);
 const isLoading = ref(false);
 const statusMsg = ref('');
 const isError = ref(false);
 const router = useRouter();
-
-const isUserCreated = ref(false);
-const tempToken = ref('');
 
 const passwordRules = computed(() => {
   const pwd = password.value;
@@ -29,45 +25,9 @@ const isPasswordValid = computed(() => {
   return r.length && r.uppercase && r.number;
 });
 
-const handleFileUpload = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  if (target.files && target.files.length > 0) {
-    file.value = target.files?.item(0) ?? null;
-  } else {
-    file.value = null;
-  }
-};
-
-const uploadFileProcess = async (token: string) => {
-  statusMsg.value = 'Usuario creado. Preparando archivo ZIP...';
-
-  if (!file.value) throw new Error("No hay archivo seleccionado");
-
-  if (!file.value.name.toLowerCase().endsWith('.zip')) {
-    throw new Error("El archivo debe ser formato .zip");
-  }
-
-  statusMsg.value = 'Subiendo y analizando datos (esto puede tardar unos segundos)...';
-
-  const formData = new FormData();
-  formData.append('file', file.value);
-
-  await api.post('/followers/upload', formData, {
-    headers: {
-      'Authorization': `Bearer ${token}`
-    },
-    params: { accountName: accountName.value }
-  });
-};
-
-const handleRegisterAndUpload = async () => {
-  if (!isUserCreated.value && !isPasswordValid.value) {
+const handleRegister = async () => {
+  if (!isPasswordValid.value) {
     statusMsg.value = "⚠️ La contraseña no cumple los requisitos.";
-    isError.value = true;
-    return;
-  }
-  if (!file.value) {
-    statusMsg.value = "⚠️ Falta el archivo ZIP.";
     isError.value = true;
     return;
   }
@@ -76,50 +36,31 @@ const handleRegisterAndUpload = async () => {
   isError.value = false;
 
   try {
-    let tokenToUse = tempToken.value;
+    statusMsg.value = 'Creando cuenta...';
 
-    if (!isUserCreated.value) {
-      statusMsg.value = 'Creando cuenta...';
-      const registerResponse = await api.post('/auth/register', {
-        email: email.value,
-        password: password.value,
-        // AQUÍ ESTÁ EL CAMBIO CLAVE PARA TU BACKEND
-        instagramUsername: accountName.value
-      });
+    // Llamada única y limpia a tu backend
+    const response = await api.post('/auth/register', {
+      email: email.value,
+      password: password.value,
+      instagramUsername: accountName.value
+    });
 
-      tokenToUse = registerResponse.data.token;
+    // Guardamos el token
+    localStorage.setItem('jwt_token', response.data.token);
 
-      if (!tokenToUse) {
-        throw new Error("El servidor no devolvió un token válido.");
-      }
+    statusMsg.value = '✅ ¡Cuenta lista! Entrando...';
 
-      isUserCreated.value = true;
-      tempToken.value = tokenToUse;
-    }
-
-    await uploadFileProcess(tokenToUse);
-
-    localStorage.setItem('jwt_token', tokenToUse);
-
-    statusMsg.value = '✅ ¡Cuenta y Datos listos! Entrando...';
+    // Lo mandamos al Dashboard
     setTimeout(() => {
       router.push({ path: '/dashboard', query: { welcome: 'true' } });
-    }, 1500);
+    }, 1000);
 
   } catch (error: any) {
     console.error(error);
     isError.value = true;
-    isLoading.value = false;
-
-    if (isUserCreated.value) {
-      statusMsg.value = '⚠️ Usuario creado, pero falló el envío del ZIP. Reintenta subir el archivo.';
-    } else {
-      statusMsg.value = error.response?.data?.message || '❌ Error al crear el usuario.';
-    }
+    statusMsg.value = error.response?.data?.message || '❌ Error al crear la cuenta.';
   } finally {
-    if (!isError.value) {
-      isLoading.value = true;
-    }
+    isLoading.value = false;
   }
 };
 </script>
@@ -142,9 +83,8 @@ const handleRegisterAndUpload = async () => {
         <h1>Crear Cuenta</h1>
         <p class="subtitle">Analiza tu Instagram hoy</p>
 
-        <form @submit.prevent="handleRegisterAndUpload">
-
-          <div v-if="!isUserCreated" class="form-fields-container">
+        <form @submit.prevent="handleRegister">
+          <div class="form-fields-container">
             <div class="input-wrapper">
               <span class="icon">👤</span>
               <input v-model="accountName" type="text" placeholder="Usuario IG (ej: @tunombre)" required
@@ -180,30 +120,9 @@ const handleRegisterAndUpload = async () => {
             </transition>
           </div>
 
-          <div v-else class="retry-message fade-in">
-            <div class="retry-icon">👤</div>
-            <p>Cuenta creada: <strong>{{ email }}</strong></p>
-            <p class="small-text">Sube tu archivo para completar el análisis.</p>
-          </div>
-
-          <div class="upload-container">
-            <div class="file-area" :class="{ 'has-file': file }">
-              <input type="file" @change="handleFileUpload" accept=".zip" class="file-input-hidden" required
-                :disabled="isLoading" id="zip-upload" />
-              <label for="zip-upload" class="file-label">
-                <span class="file-icon">{{ file ? '📦' : '📂' }}</span>
-                <span v-if="!file" class="file-text">Sube tu archivo <code>.zip</code> de Instagram</span>
-                <span v-else class="file-text success-text">{{ file.name }}</span>
-                <span v-if="!file" class="file-subtext">Toca para explorar</span>
-                <span v-else class="file-subtext">Archivo seleccionado. ¡Listo!</span>
-              </label>
-            </div>
-          </div>
-
-          <button type="submit" class="btn-primary"
-            :disabled="isLoading || (!isUserCreated && !isPasswordValid) || !file">
+          <button type="submit" class="btn-primary" :disabled="isLoading || !isPasswordValid || !email || !accountName">
             <span v-if="isLoading" class="loader"></span>
-            {{ isLoading ? 'Procesando...' : (isUserCreated ? 'Continuar Análisis' : 'Crear y Analizar') }}
+            {{ isLoading ? 'Procesando...' : 'Crear Cuenta' }}
           </button>
         </form>
 
@@ -225,7 +144,6 @@ const handleRegisterAndUpload = async () => {
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-/* Reset global para evitar problemas de Box Model */
 * {
   box-sizing: border-box;
 }
@@ -253,7 +171,6 @@ const handleRegisterAndUpload = async () => {
   justify-content: center;
   align-items: center;
   padding: 1rem;
-  /* Padding reducido en móviles para aprovechar espacio */
 }
 
 .blob {
@@ -303,7 +220,6 @@ const handleRegisterAndUpload = async () => {
   width: 100%;
   max-width: 420px;
   position: relative;
-  /* Evita que el contenido desborde internamente */
   overflow: hidden;
 }
 
@@ -320,7 +236,6 @@ const handleRegisterAndUpload = async () => {
   gap: 6px;
   transition: all 0.2s;
   z-index: 10;
-  /* Asegura que sea clicable siempre */
 }
 
 .back-link:hover {
@@ -370,6 +285,8 @@ h1 {
   flex-direction: column;
   gap: 1rem;
   width: 100%;
+  margin-bottom: 1.5rem;
+  /* Separación con el botón de enviar */
 }
 
 .input-wrapper {
@@ -391,9 +308,7 @@ h1 {
 
 .styled-input {
   width: 100%;
-  /* Ahora sí funcionará bien gracias al box-sizing: border-box global */
   padding: 1rem 1rem 1rem 3rem;
-  /* Espacio para el icono a la izquierda */
   border: 2px solid transparent;
   border-radius: 16px;
   font-size: 0.95rem;
@@ -422,13 +337,11 @@ h1 {
   background-color: #fef2f2 !important;
 }
 
-/* Transición suave para el checklist de contraseña */
 .expand-enter-active,
 .expand-leave-active {
   transition: all 0.3s ease-in-out;
   overflow: hidden;
   max-height: 200px;
-  /* Suficiente para el contenido */
   opacity: 1;
 }
 
@@ -487,83 +400,6 @@ h1 {
   font-size: 1.1em;
   width: 20px;
   text-align: center;
-}
-
-/* REDISEÑO FILE UPLOAD */
-.upload-container {
-  margin: 1rem 0 1.5rem 0;
-  width: 100%;
-}
-
-.file-input-hidden {
-  display: none;
-}
-
-.file-area {
-  background: rgba(255, 255, 255, 0.6);
-  border: 2px dashed #f9a8d4;
-  border-radius: 20px;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  width: 100%;
-}
-
-.file-area:hover {
-  background: white;
-  border-color: #f472b6;
-  box-shadow: 0 8px 16px rgba(244, 114, 182, 0.1);
-}
-
-.file-area.has-file {
-  border: 2px solid #10b981;
-  background: #ecfdf5;
-}
-
-.file-label {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 1.5rem 1rem;
-  cursor: pointer;
-  width: 100%;
-}
-
-.file-icon {
-  font-size: 2.5em;
-  margin-bottom: 0.5rem;
-  transition: transform 0.3s;
-}
-
-.file-area:hover .file-icon {
-  transform: translateY(-3px);
-}
-
-.file-text {
-  font-weight: 700;
-  font-size: 0.95rem;
-  color: #9d174d;
-  margin-bottom: 0.3rem;
-}
-
-.file-text code {
-  background: #fce7f3;
-  padding: 2px 8px;
-  border-radius: 6px;
-  color: #be185d;
-  font-family: monospace;
-}
-
-.success-text {
-  color: #059669;
-  word-break: break-all;
-  /* Evita que nombres de archivo muy largos rompan el diseño */
-}
-
-.file-subtext {
-  font-size: 0.8rem;
-  color: #64748b;
-  font-weight: 500;
 }
 
 .btn-primary {
@@ -668,54 +504,8 @@ h1 {
   text-decoration: underline;
 }
 
-.retry-message {
-  background: white;
-  padding: 1rem;
-  border-radius: 16px;
-  margin-bottom: 1.2rem;
-  color: #831843;
-  border: 1px solid #fbcfe8;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-}
-
-.retry-icon {
-  font-size: 2em;
-  margin-bottom: 0.3rem;
-}
-
-.retry-message p {
-  margin: 2px 0;
-  font-weight: 500;
-  font-size: 0.95rem;
-}
-
-.small-text {
-  font-size: 0.8rem !important;
-  color: #64748b;
-  margin-top: 6px !important;
-}
-
-.fade-in {
-  animation: fadeIn 0.4s ease-out forwards;
-}
-
 .fade-in-up {
   animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 @keyframes fadeInUp {
@@ -730,11 +520,9 @@ h1 {
   }
 }
 
-/* RESPONSIVE MEJORADO */
 @media (max-width: 480px) {
   .scrollable-content {
     align-items: flex-start;
-    /* En móviles muy pequeños, mejor alinear arriba para evitar cortes */
     padding-top: 2rem;
   }
 
@@ -754,7 +542,6 @@ h1 {
 
   .styled-input {
     font-size: 1rem;
-    /* Evita el zoom automático en iOS Safari */
   }
 }
 </style>

@@ -72,6 +72,11 @@ const handleUpload = async (file: File) => {
   startLoadingMessages()
   try {
     await uploadAnalysis(file, user.value?.instagramUserName || '')
+
+    // Si la subida fue un éxito, volvemos a pedir los datos del usuario.
+    // Esto actualizará "hasInitialData" a true en el composable, quitando el muro.
+    await fetchUser()
+
   } finally {
     stopLoadingMessages()
   }
@@ -89,63 +94,82 @@ const switchTab = (tab: any) => {
 
     <main class="main-content">
 
-      <div class="tabs-container fade-in">
-        <button class="tab-btn" :class="{ active: activeTab === 'analysis' }" @click="switchTab('analysis')">
-          <span class="tab-emoji">🔍</span> <span class="tab-text">Analizador</span>
-        </button>
-        <button class="tab-btn" :class="{ active: activeTab === 'relationships' }" @click="switchTab('relationships')">
-          <span v-if="!isPremium" class="lock-icon">🔒</span>
-          <span v-else class="tab-emoji">💞</span> <span class="tab-text">Relaciones</span>
-        </button>
-        <button class="tab-btn" :class="{ active: activeTab === 'history' }" @click="switchTab('history')">
-          <span v-if="!isPremium" class="lock-icon">🔒</span>
-          <span v-else class="tab-emoji">📈</span> <span class="tab-text">Historial</span>
-        </button>
-        <button class="tab-btn" :class="{ active: activeTab === 'list' }" @click="switchTab('list')">
-          <span v-if="!isPremium" class="lock-icon">🔒</span>
-          <span v-else class="tab-emoji">👥</span> <span class="tab-text">Seguidores</span>
-        </button>
-      </div>
-
-      <div v-if="activeTab === 'analysis'" class="view-wrapper">
-        <WelcomeBanner :visible="isFirstTime" />
-        <FileUploader v-if="!showResults" :is-loading="isLoading" :loading-text="loadingText" :parent-message="apiError"
-          @upload="handleUpload" />
-        <div v-else class="results-dashboard fade-in">
-          <button @click="resetAnalysis" class="btn-back">← Analizar otro archivo</button>
-          <div v-if="analysisResults" class="analysis-content">
-            <StatsCards :stats="analysisResults.stats" />
-            <FollowerLists :new-followers="analysisResults.newFollowers" :lost-followers="analysisResults.lostFollowers"
-              :lost-count="analysisResults.stats.lostCount" :gained-count="analysisResults.stats.gainedCount" />
+      <div v-if="!user.hasInitialData" class="onboarding-wall fade-in-up">
+        <div class="onboarding-card">
+          <div class="onboarding-header">
+            <h2>¡Hola, @{{ user.instagramUserName }}! 👋</h2>
+            <p>Tu cuenta está lista. Para encender el panel y ver tus métricas, necesitamos que subas tu primer archivo
+              de datos de Instagram.</p>
           </div>
+
+          <FileUploader :is-loading="isLoading" :loading-text="loadingText" :parent-message="apiError"
+            @upload="handleUpload" />
         </div>
       </div>
 
-      <div v-else-if="activeTab === 'relationships'" class="view-wrapper fade-in">
-        <RelationshipView v-if="isPremium" />
-        <LockedFeature v-else :title="paywallContent.relationships.title"
-          :description="paywallContent.relationships.description" :features="paywallContent.relationships.features"
-          @open-pricing="switchTab('pricing')" />
-      </div>
+      <div v-else class="dashboard-core fade-in">
 
-      <div v-else-if="activeTab === 'history'" class="view-wrapper">
-        <AnalisysHistory v-if="isPremium" :account-name="user.instagramUserName" />
-        <LockedFeature v-else :title="paywallContent.history.title" :description="paywallContent.history.description"
-          :features="paywallContent.history.features" @open-pricing="switchTab('pricing')" />
-      </div>
+        <div class="tabs-container">
+          <button class="tab-btn" :class="{ active: activeTab === 'analysis' }" @click="switchTab('analysis')">
+            <span class="tab-emoji">🔍</span> <span class="tab-text">Analizador</span>
+          </button>
+          <button class="tab-btn" :class="{ active: activeTab === 'relationships' }"
+            @click="switchTab('relationships')">
+            <span v-if="!isPremium" class="lock-icon">🔒</span>
+            <span v-else class="tab-emoji">💞</span> <span class="tab-text">Relaciones</span>
+          </button>
+          <button class="tab-btn" :class="{ active: activeTab === 'history' }" @click="switchTab('history')">
+            <span v-if="!isPremium" class="lock-icon">🔒</span>
+            <span v-else class="tab-emoji">📈</span> <span class="tab-text">Historial</span>
+          </button>
+          <button class="tab-btn" :class="{ active: activeTab === 'list' }" @click="switchTab('list')">
+            <span v-if="!isPremium" class="lock-icon">🔒</span>
+            <span v-else class="tab-emoji">👥</span> <span class="tab-text">Seguidores</span>
+          </button>
+        </div>
 
-      <div v-else-if="activeTab === 'list'" class="view-wrapper">
-        <FollowersListView v-if="isPremium" />
-        <LockedFeature v-else :title="paywallContent.list.title" :description="paywallContent.list.description"
-          :features="paywallContent.list.features" @open-pricing="switchTab('pricing')" />
-      </div>
+        <div v-if="activeTab === 'analysis'" class="view-wrapper">
+          <WelcomeBanner :visible="isFirstTime" />
+          <FileUploader v-if="!showResults" :is-loading="isLoading" :loading-text="loadingText"
+            :parent-message="apiError" @upload="handleUpload" />
+          <div v-else class="results-dashboard fade-in">
+            <button @click="resetAnalysis" class="btn-back">← Analizar otro archivo</button>
+            <div v-if="analysisResults" class="analysis-content">
+              <StatsCards :stats="analysisResults.stats" />
+              <FollowerLists :new-followers="analysisResults.newFollowers"
+                :lost-followers="analysisResults.lostFollowers" :lost-count="analysisResults.stats.lostCount"
+                :gained-count="analysisResults.stats.gainedCount" />
+            </div>
+          </div>
+        </div>
 
-      <div v-else-if="activeTab === 'pricing'" class="view-wrapper fade-in">
-        <PricingView />
-      </div>
+        <div v-else-if="activeTab === 'relationships'" class="view-wrapper fade-in">
+          <RelationshipView v-if="isPremium" />
+          <LockedFeature v-else :title="paywallContent.relationships.title"
+            :description="paywallContent.relationships.description" :features="paywallContent.relationships.features"
+            @open-pricing="switchTab('pricing')" />
+        </div>
 
-      <div v-else-if="activeTab === 'profile'" class="view-wrapper fade-in">
-        <SettingsView @navigate-pricing="switchTab('pricing')" />
+        <div v-else-if="activeTab === 'history'" class="view-wrapper">
+          <AnalisysHistory v-if="isPremium" :account-name="user.instagramUserName" />
+          <LockedFeature v-else :title="paywallContent.history.title" :description="paywallContent.history.description"
+            :features="paywallContent.history.features" @open-pricing="switchTab('pricing')" />
+        </div>
+
+        <div v-else-if="activeTab === 'list'" class="view-wrapper">
+          <FollowersListView v-if="isPremium" />
+          <LockedFeature v-else :title="paywallContent.list.title" :description="paywallContent.list.description"
+            :features="paywallContent.list.features" @open-pricing="switchTab('pricing')" />
+        </div>
+
+        <div v-else-if="activeTab === 'pricing'" class="view-wrapper fade-in">
+          <PricingView />
+        </div>
+
+        <div v-else-if="activeTab === 'profile'" class="view-wrapper fade-in">
+          <SettingsView @navigate-pricing="switchTab('pricing')" />
+        </div>
+
       </div>
 
     </main>
@@ -153,7 +177,7 @@ const switchTab = (tab: any) => {
 </template>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 * {
   box-sizing: border-box;
@@ -181,6 +205,57 @@ const switchTab = (tab: any) => {
   max-width: 100%;
 }
 
+.dashboard-core {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ========================================= */
+/* ESTILOS DEL MURO DE ONBOARDING            */
+/* ========================================= */
+.onboarding-wall {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  min-height: 60vh;
+  padding-top: 2rem;
+}
+
+.onboarding-card {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  padding: 40px;
+  max-width: 600px;
+  width: 100%;
+  box-shadow: 0 10px 40px -10px rgba(233, 30, 99, 0.15);
+  text-align: center;
+}
+
+.onboarding-header h2 {
+  color: #831843;
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 1.8rem;
+  font-weight: 800;
+}
+
+.onboarding-header p {
+  color: #64748b;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  margin-bottom: 30px;
+}
+
+/* ========================================= */
+/* ESTILOS DE TABS Y VISTAS NORMALES         */
+/* ========================================= */
+
 .tabs-container {
   background: white;
   padding: 6px;
@@ -188,14 +263,12 @@ const switchTab = (tab: any) => {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  /* Permite que bajen de línea si no caben */
   gap: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
   margin-bottom: 2rem;
   border: 1px solid rgba(255, 255, 255, 0.6);
   width: 100%;
   max-width: fit-content;
-  /* En escritorio se ajusta al contenido */
 }
 
 .tab-btn {
@@ -264,10 +337,19 @@ const switchTab = (tab: any) => {
   align-self: flex-start;
   margin-bottom: -1rem;
   font-size: 0.95rem;
+  transition: color 0.2s;
+}
+
+.btn-back:hover {
+  color: #e91e63;
 }
 
 .fade-in {
-  animation: fadeIn 0.5s ease-out;
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes fadeIn {
@@ -282,17 +364,36 @@ const switchTab = (tab: any) => {
   }
 }
 
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 /* ========================================= */
-/* 📱 MOBILE OPTIMIZATIONS (LA MAGIA AQUÍ)   */
+/* 📱 MOBILE OPTIMIZATIONS                   */
 /* ========================================= */
 @media (max-width: 650px) {
   .main-content {
     padding: 1.5rem 1rem;
   }
 
+  .onboarding-card {
+    padding: 30px 20px;
+  }
+
+  .onboarding-header h2 {
+    font-size: 1.5rem;
+  }
+
   .tabs-container {
     max-width: 100%;
-    /* Convertimos el contenedor en una cuadrícula perfecta de 2x2 */
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     padding: 8px;
@@ -304,7 +405,6 @@ const switchTab = (tab: any) => {
     padding: 12px 8px;
     font-size: 0.85rem;
     flex-direction: column;
-    /* Ponemos el icono arriba y el texto abajo */
     gap: 4px;
     text-align: center;
   }
@@ -312,7 +412,6 @@ const switchTab = (tab: any) => {
   .tab-emoji,
   .lock-icon {
     font-size: 1.3em;
-    /* Iconos un poco más grandes en móvil */
   }
 
   .results-dashboard {

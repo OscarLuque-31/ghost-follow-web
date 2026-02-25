@@ -18,6 +18,7 @@ export interface Subscription {
 export interface User {
   instagramUserName: string
   email: string
+  hasInitialData: boolean
   subscription: Subscription
 }
 
