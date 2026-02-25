@@ -9,23 +9,16 @@ const email = ref('')
 const code = ref('')
 const newPassword = ref('')
 const confirmPassword = ref('')
+const showNewPassword = ref(false) // OJITO 1
+const showConfirmPassword = ref(false) // OJITO 2
 
 const loading = ref(false)
 const errorMsg = ref('')
 
 const validatePassword = (password: string): string | null => {
-  if (password.length < 8) {
-    return 'La contraseña debe tener al menos 8 caracteres.'
-  }
-  if (!/[A-Z]/.test(password)) {
-    return 'La contraseña debe contener al menos una letra mayúscula.'
-  }
-  if (!/[a-z]/.test(password)) {
-    return 'La contraseña debe contener al menos una letra minúscula.'
-  }
-  if (!/[0-9]/.test(password)) {
-    return 'La contraseña debe contener al menos un número.'
-  }
+  if (password.length < 8) return 'Mínimo 8 caracteres.'
+  if (!/[A-Z]/.test(password)) return 'Debe contener una letra mayúscula.'
+  if (!/[0-9]/.test(password)) return 'Debe contener un número.'
   return null
 }
 
@@ -33,12 +26,11 @@ const requestResetCode = async () => {
   if (!email.value) return
   loading.value = true
   errorMsg.value = ''
-
   try {
     await api.post('/auth/forgot-password', { email: email.value })
     step.value = 2
   } catch (err: any) {
-    errorMsg.value = err.response?.data?.message || 'Error al enviar el correo. Inténtalo de nuevo.'
+    errorMsg.value = err.response?.data?.message || 'Error al enviar el correo.'
   } finally {
     loading.value = false
   }
@@ -51,12 +43,8 @@ const verifyCode = async () => {
   }
   loading.value = true
   errorMsg.value = ''
-
   try {
-    await api.post('/auth/verify-code', {
-      email: email.value,
-      code: code.value
-    })
+    await api.post('/auth/verify-code', { email: email.value, code: code.value })
     step.value = 3
   } catch (err: any) {
     errorMsg.value = err.response?.data?.message || 'Código incorrecto o caducado.'
@@ -70,16 +58,13 @@ const resetPassword = async () => {
     errorMsg.value = 'Las contraseñas no coinciden.'
     return
   }
-
   const validationError = validatePassword(newPassword.value)
   if (validationError) {
     errorMsg.value = validationError
     return
   }
-
   loading.value = true
   errorMsg.value = ''
-
   try {
     await api.post('/auth/reset-password', {
       email: email.value,
@@ -113,14 +98,18 @@ const goBack = (toStep: number) => {
           acceso.</p>
 
         <form @submit.prevent="requestResetCode">
-          <div class="field">
-            <input v-model="email" type="email" placeholder="tu@correo.com" required class="input-field"
+          <div class="input-wrapper">
+            <span class="icon">✉️</span>
+            <input v-model="email" type="email" placeholder="tu@correo.com" required class="styled-input"
               :disabled="loading" />
           </div>
 
-          <div v-if="errorMsg" class="error-msg">{{ errorMsg }}</div>
+          <transition name="fade">
+            <div v-if="errorMsg" class="status-box msg-error">{{ errorMsg }}</div>
+          </transition>
 
           <button type="submit" class="btn-primary" :disabled="loading || !email">
+            <span v-if="loading" class="loader"></span>
             {{ loading ? 'Enviando...' : 'Enviar Código' }}
           </button>
         </form>
@@ -133,13 +122,16 @@ const goBack = (toStep: number) => {
 
         <form @submit.prevent="verifyCode">
           <div class="field">
-            <input v-model="code" type="text" maxlength="6" placeholder="••••••" required class="input-field code-input"
-              :disabled="loading" />
+            <input v-model="code" type="text" maxlength="6" placeholder="••••••" required
+              class="styled-input code-input" :disabled="loading" />
           </div>
 
-          <div v-if="errorMsg" class="error-msg">{{ errorMsg }}</div>
+          <transition name="fade">
+            <div v-if="errorMsg" class="status-box msg-error">{{ errorMsg }}</div>
+          </transition>
 
           <button type="submit" class="btn-primary" :disabled="loading || code.length !== 6">
+            <span v-if="loading" class="loader"></span>
             {{ loading ? 'Verificando...' : 'Verificar Código' }}
           </button>
         </form>
@@ -148,22 +140,34 @@ const goBack = (toStep: number) => {
 
       <div v-else-if="step === 3" class="step-container">
         <div class="icon-header">🔑</div>
-        <h2>Crea una nueva contraseña</h2>
-        <p class="subtitle">Tu código ha sido verificado. Ingresa tu nueva contraseña.</p>
+        <h2>Crea nueva contraseña</h2>
+        <p class="subtitle">Código verificado. Ingresa tu nueva contraseña segura.</p>
 
         <form @submit.prevent="resetPassword">
-          <div class="field">
-            <input v-model="newPassword" type="password" placeholder="Nueva contraseña" required class="input-field"
-              :disabled="loading" />
-          </div>
-          <div class="field">
-            <input v-model="confirmPassword" type="password" placeholder="Confirma la contraseña" required
-              class="input-field" :disabled="loading" />
+          <div class="input-wrapper">
+            <span class="icon">🔒</span>
+            <input v-model="newPassword" :type="showNewPassword ? 'text' : 'password'" placeholder="Nueva contraseña"
+              required class="styled-input pr-10" :disabled="loading" />
+            <button type="button" class="toggle-password" @click="showNewPassword = !showNewPassword">
+              {{ showNewPassword ? '👁️' : '🙈' }}
+            </button>
           </div>
 
-          <div v-if="errorMsg" class="error-msg">{{ errorMsg }}</div>
+          <div class="input-wrapper" style="margin-top: 1rem;">
+            <span class="icon">✓</span>
+            <input v-model="confirmPassword" :type="showConfirmPassword ? 'text' : 'password'"
+              placeholder="Confirma contraseña" required class="styled-input pr-10" :disabled="loading" />
+            <button type="button" class="toggle-password" @click="showConfirmPassword = !showConfirmPassword">
+              {{ showConfirmPassword ? '👁️' : '🙈' }}
+            </button>
+          </div>
 
-          <button type="submit" class="btn-primary" :disabled="loading || !newPassword || !confirmPassword">
+          <transition name="fade">
+            <div v-if="errorMsg" class="status-box msg-error">{{ errorMsg }}</div>
+          </transition>
+
+          <button type="submit" class="btn-primary mt-4" :disabled="loading || !newPassword || !confirmPassword">
+            <span v-if="loading" class="loader"></span>
             {{ loading ? 'Guardando...' : 'Cambiar Contraseña' }}
           </button>
         </form>
@@ -171,7 +175,7 @@ const goBack = (toStep: number) => {
 
       <div v-else-if="step === 4" class="step-container success-container">
         <div class="success-icon">✅</div>
-        <h2>¡Contraseña actualizada!</h2>
+        <h2>¡Actualizada!</h2>
         <p class="subtitle">Ya puedes iniciar sesión con tu nueva contraseña.</p>
         <button class="btn-primary" @click="$emit('close')">Volver al Login</button>
       </div>
@@ -181,32 +185,39 @@ const goBack = (toStep: number) => {
 </template>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
 .modal-backdrop {
   position: fixed;
   inset: 0;
   background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 100;
   padding: 1rem;
+  font-family: 'Inter', sans-serif;
 }
 
 .modal-card {
   background: white;
   width: 100%;
   max-width: 420px;
-  border-radius: 24px;
+  border-radius: 28px;
   padding: 2.5rem 2rem;
   position: relative;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 40px -5px rgba(233, 30, 99, 0.15);
   text-align: center;
 }
 
 .close-btn {
   position: absolute;
-  top: 1rem;
+  top: 1.2rem;
   right: 1.5rem;
   background: none;
   border: none;
@@ -217,19 +228,36 @@ const goBack = (toStep: number) => {
 }
 
 .close-btn:hover {
-  color: #1e293b;
+  color: #e91e63;
 }
 
 .icon-header {
-  font-size: 3rem;
-  margin-bottom: 1rem;
+  font-size: 3.5rem;
+  margin-bottom: 0.5rem;
+  display: inline-block;
+  animation: float 3s ease-in-out infinite;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.05));
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-5px);
+  }
 }
 
 h2 {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   font-weight: 800;
-  color: #1e293b;
+  color: #831843;
+  margin-top: 0;
   margin-bottom: 0.5rem;
+  letter-spacing: -0.5px;
 }
 
 .subtitle {
@@ -239,49 +267,86 @@ h2 {
   margin-bottom: 2rem;
 }
 
-form {
-  display: flex;
-  flex-direction: column;
+.input-wrapper {
+  position: relative;
   width: 100%;
-  gap: 1.25rem;
-  /* Magia para separar los inputs y botones automáticamente */
+  text-align: left;
 }
 
-.field {
-  width: 100%;
+.icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.1em;
+  color: #9d174d;
+  opacity: 0.8;
+  pointer-events: none;
+  z-index: 2;
 }
 
-.input-field {
+.styled-input {
   width: 100%;
-  padding: 14px 16px;
-  border-radius: 12px;
-  border: 1px solid #cbd5e1;
-  font-size: 1rem;
-  color: #334155;
-  transition: all 0.2s;
+  padding: 1rem 1rem 1rem 3rem;
+  border: 2px solid transparent;
+  border-radius: 16px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
   background: #f8fafc;
-  box-sizing: border-box;
-}
-
-.input-field:focus {
+  color: #4c1d95;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   outline: none;
-  border-color: #e91e63;
-  background: white;
-  box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.1);
 }
 
-.input-field:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.styled-input:focus {
+  background: white;
+  border-color: #f472b6;
+  box-shadow: 0 0 0 4px rgba(244, 114, 182, 0.15);
+}
+
+.styled-input::placeholder {
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+.styled-input.pr-10 {
+  padding-right: 3rem;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+  z-index: 5;
+  padding: 0;
+}
+
+.toggle-password:hover {
+  opacity: 1;
 }
 
 .code-input {
   text-align: center;
   font-size: 1.8rem;
-  letter-spacing: 0.5em;
+  letter-spacing: 0.4em;
   font-weight: 800;
   color: #e91e63;
   padding: 1rem;
+  background: white;
+  border: 2px dashed #f472b6;
+}
+
+.code-input:focus {
+  border-style: solid;
 }
 
 .code-input::placeholder {
@@ -293,27 +358,41 @@ form {
 
 .btn-primary {
   width: 100%;
-  padding: 14px;
-  background: #e91e63;
+  padding: 1rem;
+  background: linear-gradient(135deg, #e91e63 0%, #db2777 100%);
   color: white;
   border: none;
-  border-radius: 12px;
+  border-radius: 16px;
   font-weight: 700;
-  font-size: 1.05rem;
   cursor: pointer;
-  transition: all 0.2s;
+  font-size: 1.05rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 12px rgba(233, 30, 99, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 1.5rem;
 }
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(233, 30, 99, 0.3);
+  box-shadow: 0 8px 20px rgba(233, 30, 99, 0.35);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .btn-primary:disabled {
-  opacity: 0.6;
+  background: #f48fb1;
   cursor: not-allowed;
+  transform: none;
   box-shadow: none;
+}
+
+.mt-4 {
+  margin-top: 1.5rem;
 }
 
 .btn-text {
@@ -325,21 +404,42 @@ form {
   margin-top: 1.5rem;
   cursor: pointer;
   transition: color 0.2s;
+  font-family: 'Inter', sans-serif;
 }
 
 .btn-text:hover:not(:disabled) {
-  color: #1e293b;
+  color: #db2777;
   text-decoration: underline;
 }
 
-.error-msg {
-  color: #dc2626;
+.loader {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.status-box {
+  padding: 10px 14px;
+  border-radius: 12px;
+  margin-top: 1rem;
   font-size: 0.85rem;
   font-weight: 600;
-  margin: 0;
+  text-align: left;
+}
+
+.msg-error {
   background: #fef2f2;
-  padding: 10px;
-  border-radius: 8px;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
 }
 
 .success-container {
@@ -348,7 +448,7 @@ form {
 
 .success-icon {
   font-size: 4rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   animation: bounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
@@ -359,7 +459,7 @@ form {
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px) scale(0.98);
+    transform: translateY(15px) scale(0.95);
   }
 
   to {
@@ -374,11 +474,22 @@ form {
   }
 
   50% {
-    transform: scale(1.2);
+    transform: scale(1.15);
   }
 
   100% {
     transform: scale(1);
   }
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 </style>

@@ -6,6 +6,7 @@ import ForgotPasswordModal from '@/components/login/ForgotPasswordModal.vue';
 
 const email = ref('');
 const password = ref('');
+const showPassword = ref(false); // ESTADO PARA EL OJITO
 const errorMsg = ref('');
 const isLoading = ref(false);
 const router = useRouter();
@@ -33,17 +34,15 @@ const handleLogin = async () => {
 
 <template>
   <div class="page-root">
-
     <div class="fixed-background">
       <div class="blob blob-1"></div>
       <div class="blob blob-2"></div>
     </div>
 
     <div class="scrollable-content">
-
       <div class="glass-card fade-in-up">
         <router-link to="/" class="back-link">
-          <span class="arrow">←</span> Volver
+          <span class="arrow">←</span> Inicio
         </router-link>
 
         <div class="ghost-animation">👻</div>
@@ -52,49 +51,61 @@ const handleLogin = async () => {
         <p class="subtitle">Inicia sesión en GhostFollow</p>
 
         <form @submit.prevent="handleLogin">
+          <div class="form-fields-container">
+            <div class="input-wrapper">
+              <span class="icon">✉️</span>
+              <input v-model="email" type="email" placeholder="Correo electrónico" required class="styled-input" />
+            </div>
 
-          <div class="input-wrapper">
-            <span class="icon">✉️</span>
-            <input v-model="email" type="email" placeholder="Correo electrónico" required class="styled-input" />
+            <div class="input-wrapper">
+              <span class="icon">🔒</span>
+              <input v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="Contraseña" required
+                class="styled-input pr-10" />
+              <button type="button" class="toggle-password" @click="showPassword = !showPassword">
+                {{ showPassword ? '👁️' : '🙈' }}
+              </button>
+            </div>
+
+            <div class="forgot-password-link">
+              <button type="button" @click="showForgotPassword = true">
+                ¿Olvidaste tu contraseña?
+              </button>
+            </div>
           </div>
 
-          <div class="input-wrapper">
-            <span class="icon">🔒</span>
-            <input v-model="password" type="password" placeholder="Contraseña" required class="styled-input" />
-          </div>
-
-          <div class="forgot-password-link">
-            <button type="button" @click="showForgotPassword = true">
-              ¿Olvidaste tu contraseña?
-            </button>
-          </div>
-
-          <button type="submit" class="btn-primary" :disabled="isLoading">
+          <button type="submit" class="btn-primary" :disabled="isLoading || !email || !password">
+            <span v-if="isLoading" class="loader"></span>
             {{ isLoading ? 'Entrando...' : 'Iniciar Sesión' }}
           </button>
         </form>
 
-        <div v-if="errorMsg" class="error-box">
-          {{ errorMsg }}
-        </div>
+        <transition name="fade">
+          <div v-if="errorMsg" class="status-box msg-error">
+            {{ errorMsg }}
+          </div>
+        </transition>
 
         <div class="footer-links">
           <p>¿No tienes cuenta?</p>
-          <router-link to="/register" class="register-link">Regístrate gratis</router-link>
+          <router-link to="/register" class="login-link">Regístrate gratis</router-link>
         </div>
       </div>
-
     </div>
 
     <ForgotPasswordModal v-if="showForgotPassword" @close="showForgotPassword = false" />
-
   </div>
 </template>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
 .page-root {
   width: 100%;
-  font-family: 'Segoe UI', sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .fixed-background {
@@ -103,7 +114,7 @@ const handleLogin = async () => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%);
+  background: linear-gradient(135deg, #fce4ec 0%, #fbcfe8 100%);
   z-index: -1;
   overflow: hidden;
 }
@@ -114,33 +125,32 @@ const handleLogin = async () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
-  box-sizing: border-box;
+  padding: 1rem;
 }
 
 .blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(60px);
-  opacity: 0.5;
-  animation: moveBlob 10s infinite alternate ease-in-out;
+  filter: blur(80px);
+  opacity: 0.6;
+  animation: moveBlob 12s infinite alternate ease-in-out;
 }
 
 .blob-1 {
-  width: 80vw;
-  height: 80vw;
-  background-color: #ffc1e3;
-  top: -20%;
-  left: -20%;
+  width: 70vw;
+  height: 70vw;
+  background-color: #f9a8d4;
+  top: -10%;
+  left: -10%;
 }
 
 .blob-2 {
-  width: 70vw;
-  height: 70vw;
-  background-color: #fff0f5;
-  bottom: -20%;
-  right: -20%;
-  animation-delay: -5s;
+  width: 60vw;
+  height: 60vw;
+  background-color: #fdf2f8;
+  bottom: -10%;
+  right: -10%;
+  animation-delay: -6s;
 }
 
 @keyframes moveBlob {
@@ -149,66 +159,52 @@ const handleLogin = async () => {
   }
 
   100% {
-    transform: translate(20px, 20px) scale(1.1);
+    transform: translate(30px, 30px) scale(1.05);
   }
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  padding: 40px 30px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  padding: 2.5rem 2rem;
   text-align: center;
-  box-shadow: 0 8px 32px 0 rgba(233, 30, 99, 0.15);
+  box-shadow: 0 10px 40px -10px rgba(233, 30, 99, 0.2);
   width: 100%;
-  max-width: 380px;
+  max-width: 420px;
   position: relative;
-}
-
-.fade-in-up {
-  animation: fadeInUp 0.6s ease-out forwards;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  overflow: hidden;
 }
 
 .back-link {
   position: absolute;
-  top: 20px;
-  left: 20px;
+  top: 1.5rem;
+  left: 1.5rem;
   text-decoration: none;
-  color: #c2185b;
+  color: #9d174d;
   font-size: 0.9em;
-  font-weight: 600;
+  font-weight: 700;
   display: flex;
   align-items: center;
-  gap: 5px;
-  transition: transform 0.2s;
+  gap: 6px;
+  transition: all 0.2s;
+  z-index: 10;
 }
 
 .back-link:hover {
-  transform: translateX(-3px);
-  color: #880e4f;
+  transform: translateX(-4px);
+  color: #be185d;
 }
 
 .ghost-animation {
-  font-size: 4em;
-  margin-top: 10px;
-  margin-bottom: 5px;
+  font-size: 3.5em;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
   display: inline-block;
   animation: float 3s ease-in-out infinite;
-  filter: drop-shadow(0 5px 5px rgba(233, 30, 99, 0.2));
+  filter: drop-shadow(0 8px 8px rgba(233, 30, 99, 0.25));
 }
 
 @keyframes float {
@@ -219,143 +215,256 @@ const handleLogin = async () => {
   }
 
   50% {
-    transform: translateY(-8px);
+    transform: translateY(-10px);
   }
 }
 
 h1 {
   margin: 0;
-  color: #880e4f;
-  font-size: 1.8em;
+  color: #831843;
+  font-size: 1.8rem;
   font-weight: 800;
+  letter-spacing: -0.5px;
 }
 
 .subtitle {
-  color: #c2185b;
+  color: #be185d;
   margin-top: 5px;
-  margin-bottom: 30px;
-  font-size: 0.95em;
-  opacity: 0.8;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.form-fields-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  margin-bottom: 1.5rem;
 }
 
 .input-wrapper {
   position: relative;
-  margin-bottom: 15px;
   width: 100%;
 }
 
 .icon {
   position: absolute;
-  left: 15px;
+  left: 1rem;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 1.2em;
+  font-size: 1.1em;
+  color: #9d174d;
+  opacity: 0.8;
   pointer-events: none;
-  opacity: 0.7;
+  z-index: 2;
 }
 
 .styled-input {
   width: 100%;
-  padding: 14px 14px 14px 45px;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  border-radius: 50px;
-  font-size: 16px;
-  background: rgba(255, 255, 255, 0.8);
-  color: #880e4f;
-  box-sizing: border-box;
-  transition: all 0.3s ease;
+  padding: 1rem 1rem 1rem 3rem;
+  border: 2px solid transparent;
+  border-radius: 16px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  background: white;
+  color: #4c1d95;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   outline: none;
 }
 
 .styled-input:focus {
-  background: white;
-  border-color: #e91e63;
-  box-shadow: 0 0 0 4px rgba(233, 30, 99, 0.1);
+  border-color: #f472b6;
+  box-shadow: 0 0 0 4px rgba(244, 114, 182, 0.15);
+  transform: translateY(-1px);
 }
 
 .styled-input::placeholder {
-  color: #d81b60;
-  opacity: 0.5;
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+.styled-input.pr-10 {
+  padding-right: 3rem;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+  z-index: 5;
+  padding: 0;
+}
+
+.toggle-password:hover {
+  opacity: 1;
 }
 
 .forgot-password-link {
   text-align: right;
-  margin-top: -5px;
-  margin-bottom: 15px;
-  padding-right: 10px;
+  margin-top: -0.5rem;
 }
 
 .forgot-password-link button {
   background: none;
   border: none;
-  color: #d81b60;
-  font-size: 0.85em;
+  color: #db2777;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
   padding: 0;
   transition: color 0.2s ease;
+  font-family: 'Inter', sans-serif;
 }
 
 .forgot-password-link button:hover {
-  color: #880e4f;
+  color: #9d174d;
   text-decoration: underline;
 }
 
 .btn-primary {
   width: 100%;
-  padding: 14px;
-  margin-top: 10px;
-  background-color: #e91e63;
+  padding: 1rem;
+  background: linear-gradient(135deg, #e91e63 0%, #db2777 100%);
   color: white;
   border: none;
-  border-radius: 50px;
+  border-radius: 16px;
   font-weight: 700;
   cursor: pointer;
-  font-size: 1.1em;
-  transition: all 0.2s;
-  box-shadow: 0 4px 15px rgba(233, 30, 99, 0.3);
+  font-size: 1.05rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(233, 30, 99, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 
-.btn-primary:hover {
-  background-color: #c2185b;
+.btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(233, 30, 99, 0.35);
 }
 
-.btn-primary:active {
-  transform: scale(0.98);
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .btn-primary:disabled {
-  background-color: #f48fb1;
-  cursor: wait;
+  background: #f48fb1;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
-.error-box {
-  background: #ffebee;
-  color: #d32f2f;
-  padding: 10px;
-  border-radius: 8px;
-  margin-top: 15px;
-  font-size: 0.9em;
+.loader {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.status-box {
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-top: 1.2rem;
+  font-size: 0.9rem;
   font-weight: 600;
-  border: 1px solid #ffcdd2;
+  line-height: 1.4;
+}
+
+.msg-error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
 }
 
 .footer-links {
-  margin-top: 25px;
-  font-size: 0.95em;
-  color: #c2185b;
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: #64748b;
+  font-weight: 500;
 }
 
-.register-link {
-  color: #e91e63;
+.login-link {
+  color: #db2777;
   text-decoration: none;
-  font-weight: 800;
+  font-weight: 700;
   display: inline-block;
-  margin-top: 5px;
+  margin-top: 6px;
+  transition: color 0.2s;
 }
 
-.register-link:hover {
+.login-link:hover {
+  color: #9d174d;
   text-decoration: underline;
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+@media (max-width: 480px) {
+  .scrollable-content {
+    align-items: flex-start;
+    padding-top: 2rem;
+  }
+
+  .glass-card {
+    padding: 2.5rem 1.5rem;
+    border-radius: 20px;
+  }
+
+  h1 {
+    font-size: 1.6rem;
+  }
+
+  .back-link {
+    top: 1rem;
+    left: 1rem;
+  }
+
+  .styled-input {
+    font-size: 1rem;
+  }
 }
 </style>

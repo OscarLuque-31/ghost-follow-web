@@ -6,6 +6,7 @@ import api from '@/services/api';
 const accountName = ref('');
 const email = ref('');
 const password = ref('');
+const showPassword = ref(false); // ESTADO PARA EL OJITO
 const isLoading = ref(false);
 const statusMsg = ref('');
 const isError = ref(false);
@@ -38,25 +39,20 @@ const handleRegister = async () => {
   try {
     statusMsg.value = 'Creando cuenta...';
 
-    // Llamada única y limpia a tu backend
     const response = await api.post('/auth/register', {
       email: email.value,
       password: password.value,
       instagramUsername: accountName.value
     });
 
-    // Guardamos el token
     localStorage.setItem('jwt_token', response.data.token);
-
     statusMsg.value = '✅ ¡Cuenta lista! Entrando...';
 
-    // Lo mandamos al Dashboard
     setTimeout(() => {
       router.push({ path: '/dashboard', query: { welcome: 'true' } });
     }, 1000);
 
   } catch (error: any) {
-    console.error(error);
     isError.value = true;
     statusMsg.value = error.response?.data?.message || '❌ Error al crear la cuenta.';
   } finally {
@@ -98,8 +94,11 @@ const handleRegister = async () => {
 
             <div class="input-wrapper">
               <span class="icon">🔒</span>
-              <input v-model="password" type="password" placeholder="Contraseña segura" class="styled-input"
-                :class="{ 'input-error': password && !isPasswordValid }" />
+              <input v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="Contraseña segura"
+                class="styled-input pr-10" :class="{ 'input-error': password && !isPasswordValid }" />
+              <button type="button" class="toggle-password" @click="showPassword = !showPassword">
+                {{ showPassword ? '👁️' : '🙈' }}
+              </button>
             </div>
 
             <transition name="expand">
@@ -286,7 +285,6 @@ h1 {
   gap: 1rem;
   width: 100%;
   margin-bottom: 1.5rem;
-  /* Separación con el botón de enviar */
 }
 
 .input-wrapper {
@@ -306,6 +304,7 @@ h1 {
   z-index: 2;
 }
 
+/* ESTILOS DEL INPUT Y EL OJITO */
 .styled-input {
   width: 100%;
   padding: 1rem 1rem 1rem 3rem;
@@ -332,9 +331,33 @@ h1 {
   font-weight: 400;
 }
 
+.styled-input.pr-10 {
+  padding-right: 3rem;
+}
+
+/* Espacio para el ojito */
 .input-error {
   border-color: #f87171 !important;
   background-color: #fef2f2 !important;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+  z-index: 5;
+  padding: 0;
+}
+
+.toggle-password:hover {
+  opacity: 1;
 }
 
 .expand-enter-active,
@@ -451,17 +474,6 @@ h1 {
   }
 }
 
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
 .status-box {
   padding: 12px 16px;
   border-radius: 12px;
@@ -518,6 +530,17 @@ h1 {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 
 @media (max-width: 480px) {
