@@ -82,7 +82,9 @@ const handleRegisterAndUpload = async () => {
       statusMsg.value = 'Creando cuenta...';
       const registerResponse = await api.post('/auth/register', {
         email: email.value,
-        password: password.value
+        password: password.value,
+        // AQUÍ ESTÁ EL CAMBIO CLAVE PARA TU BACKEND
+        instagramUsername: accountName.value
       });
 
       tokenToUse = registerResponse.data.token;
