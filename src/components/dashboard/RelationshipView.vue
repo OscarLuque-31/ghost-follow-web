@@ -95,7 +95,7 @@ const emptyStateMessage = computed(() => {
               {{ user.name.charAt(0).toUpperCase() }}
             </div>
             <div class="user-info">
-              <span class="username">{{ user.name }}</span>
+              <span class="username" :title="user.name">{{ user.name }}</span>
               <span class="status-text" v-if="activeSubTab === 'traitors'">No te sigue</span>
               <span class="status-text" v-else-if="activeSubTab === 'fans'">Te sigue</span>
               <span class="status-text" v-else>Amigos</span>
@@ -220,7 +220,7 @@ const emptyStateMessage = computed(() => {
 /* --- GRID & CARDS --- */
 .users-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 1rem;
   width: 100%;
 }
@@ -235,6 +235,10 @@ const emptyStateMessage = computed(() => {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.8);
   transition: transform 0.2s, box-shadow 0.2s;
+
+  max-width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .user-card:hover {
@@ -246,6 +250,8 @@ const emptyStateMessage = computed(() => {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
+  flex: 1;
 }
 
 .avatar {
@@ -257,6 +263,7 @@ const emptyStateMessage = computed(() => {
   justify-content: center;
   font-weight: 700;
   font-size: 1.1rem;
+  flex-shrink: 0;
 }
 
 .avatar.traitors {
@@ -277,12 +284,16 @@ const emptyStateMessage = computed(() => {
 .user-info {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .username {
   font-weight: 600;
   color: #1e293b;
   font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .status-text {
@@ -297,6 +308,8 @@ const emptyStateMessage = computed(() => {
   padding: 5px;
   border-radius: 6px;
   transition: background 0.2s, color 0.2s;
+  flex-shrink: 0;
+  margin-left: 8px;
 }
 
 .profile-link:hover {
@@ -363,9 +376,36 @@ const emptyStateMessage = computed(() => {
   }
 }
 
+/* ========================================= */
+/* 📱 MOBILE OPTIMIZATIONS                   */
+/* ========================================= */
 @media (max-width: 600px) {
   .users-grid {
     grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .user-card {
+    padding: 0.75rem;
+  }
+
+  .avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+  }
+
+  .username {
+    font-size: 0.9rem;
+  }
+
+  .sub-tabs {
+    gap: 0.5rem;
+  }
+
+  .sub-tab-btn {
+    padding: 6px 12px;
+    font-size: 0.85rem;
   }
 }
 </style>
