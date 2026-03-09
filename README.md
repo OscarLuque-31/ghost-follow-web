@@ -1,48 +1,48 @@
-# ghost-follow-web
+# 🚀 GhostFollow v1.0.0 - Lanzamiento Oficial 👻
 
-This template should help get you started developing with Vue 3 in Vite.
+¡Bienvenidos a la primera versión estable de **GhostFollow**! 
+Esta aplicación nace con un objetivo claro: devolver a los usuarios el control sobre su comunidad de Instagram, permitiéndoles descubrir quién los ha dejado de seguir, quiénes son sus verdaderos fans y cómo evoluciona su cuenta, todo ello sin comprometer su privacidad ni su contraseña.
 
-## Recommended IDE Setup
+## ✨ Funcionalidades Principales
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+### 1. Panel de Relaciones (El Salseo)
+* 😡 **Traidores:** Detecta al instante los usuarios a los que sigues pero no te siguen de vuelta.
+* 🤩 **Fans:** Descubre a los usuarios que te siguen fielmente aunque tú no los sigas.
+* 🤝 **Mutuals:** Visualiza a tus amigos y conexiones bidireccionales.
 
-## Recommended Browser Setup
+### 2. Analizador de Archivos Oficiales
+* Procesamiento rápido y local de archivos `.zip` exportados directamente desde Instagram.
+* Sistema de comparativas: descubre exactamente cuántos y qué seguidores has ganado o perdido desde tu último análisis.
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd) 
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+### 3. Seguidores Avanzados
+* Lista completa de seguidores con buscador en tiempo real.
+* Filtros avanzados por fecha: averigua quién te empezó a seguir antes o después de un día concreto.
+* Paginación infinita optimizada para grandes volúmenes de datos.
 
-## Type Support for `.vue` Imports in TS
+### 4. Sistema de Alertas por Email 🔔
+* Notificaciones automáticas directas a tu bandeja de entrada con un resumen de los seguidores ganados y perdidos tras cada análisis.
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+### 5. Historial Evolutivo 📈
+* Registro histórico de todos tus análisis para que puedas ver la curva de crecimiento (o pérdida) de tu cuenta a lo largo del tiempo.
 
-## Customize configuration
+---
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+## 🔒 Seguridad y Privacidad (Nuestra Prioridad)
+* **Zero-Password Policy:** Jamás pedimos las credenciales de Instagram del usuario. Trabajamos exclusivamente con el archivo oficial de exportación de datos de Meta.
+* **Autenticación Segura:** Sistema de login y registro protegido con JWT (JSON Web Tokens) y contraseñas encriptadas.
+* **Recuperación de cuentas:** Flujo completo de recuperación de contraseña mediante envío de códigos de 6 dígitos al correo electrónico (OTP).
 
-## Project Setup
+---
 
-```sh
-npm install
-```
+## 📱 Interfaz y Experiencia de Usuario (UI/UX)
+* **Diseño "Glassmorphism" Premium:** UI moderna con efectos de cristal templado, transparencias y gradientes dinámicos.
+* **Onboarding Inteligente:** Muro de bienvenida que guía a los nuevos usuarios a subir su primer archivo antes de desbloquear el panel (cero fricción).
+* **Rendimiento a 60 FPS:** Animaciones de fondo aceleradas por hardware (GPU) mediante `translate3d` y `will-change` para garantizar un scroll fluido en cualquier dispositivo móvil.
+* **100% Responsive:** Interfaz adaptada al milímetro para smartphones, con tarjetas compactas y control de desbordamiento de texto.
 
-### Compile and Hot-Reload for Development
+---
 
-```sh
-npm run dev
-```
-
-### Type-Check, Compile and Minify for Production
-
-```sh
-npm run build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
+## 🛠️ Stack Tecnológico
+* **Frontend:** Vue 3 (Composition API), TypeScript, Vite, CSS puro (sin librerías pesadas).
+* **Backend:** Java 17, Spring Boot 3, Spring Security (JWT), Spring Data JPA.
+* **Base de Datos:** PostgreSQL / MySQL.
