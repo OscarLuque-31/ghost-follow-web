@@ -1,8 +1,25 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useHead } from '@vueuse/head';
 import api from '@/services/api';
 import ForgotPasswordModal from '@/components/login/ForgotPasswordModal.vue';
+
+// --- CONFIGURACIÓN SEO ---
+useHead({
+  title: 'Iniciar sesión | Ghost Follow',
+  meta: [
+    {
+      name: 'description',
+      content: 'Accede a tu panel de Ghost Follow para subir tu archivo de datos de Instagram y descubrir quién te ha dejado de seguir de forma segura.'
+    },
+    {
+      name: 'robots',
+      content: 'index, follow'
+    }
+  ]
+});
+// -------------------------
 
 const email = ref('');
 const password = ref('');

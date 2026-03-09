@@ -1,7 +1,24 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { useHead } from '@vueuse/head'; // Añadido para SEO
 import api from '@/services/api';
+
+// --- CONFIGURACIÓN SEO ---
+useHead({
+  title: 'Crear cuenta gratis | Ghost Follow',
+  meta: [
+    {
+      name: 'description',
+      content: 'Regístrate gratis en Ghost Follow. Analiza tus seguidores de Instagram, descubre quién no te sigue de vuelta y protege tu cuenta sin dar contraseñas.'
+    },
+    {
+      name: 'robots',
+      content: 'index, follow'
+    }
+  ]
+});
+// -------------------------
 
 const accountName = ref('');
 const email = ref('');

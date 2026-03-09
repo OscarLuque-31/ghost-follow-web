@@ -1,49 +1,38 @@
 <script setup lang="ts">
+import { useHead } from '@vueuse/head'
+
+useHead({
+  title: 'Ghost Follow | Descubre quién te dejó de seguir en Instagram',
+  meta: [
+    {
+      name: 'description',
+      content: 'La app más segura para ver quién no te devuelve el follow en Instagram. Funciona con tu archivo oficial de datos sin pedirte contraseñas. 100% privado.'
+    },
+    {
+      name: 'keywords',
+      content: 'quien me dejo de seguir en instagram, unfollowers instagram, ver mutuals instagram, app unfollow segura'
+    }
+  ]
+})
 </script>
 
 <template>
   <div class="page-root">
-
-    <!-- Fondo estático: SVG con manchas suaves sin blur ni filter -->
     <div class="bg-canvas" aria-hidden="true">
-      <svg class="bg-svg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice"
-        xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <radialGradient id="blob1" cx="15%" cy="15%" r="55%">
-            <stop offset="0%" stop-color="#f9a8d4" stop-opacity="0.85" />
-            <stop offset="100%" stop-color="#fce4ec" stop-opacity="0" />
-          </radialGradient>
-          <radialGradient id="blob2" cx="88%" cy="88%" r="55%">
-            <stop offset="0%" stop-color="#fdf2f8" stop-opacity="0.9" />
-            <stop offset="100%" stop-color="#fce4ec" stop-opacity="0" />
-          </radialGradient>
-          <radialGradient id="blob3" cx="60%" cy="30%" r="35%">
-            <stop offset="0%" stop-color="#fbcfe8" stop-opacity="0.5" />
-            <stop offset="100%" stop-color="#fce4ec" stop-opacity="0" />
-          </radialGradient>
-        </defs>
-        <!-- Base -->
-        <rect width="1440" height="900" fill="#fce4ec" />
-        <!-- Manchas de color, sin filtros -->
-        <rect width="1440" height="900" fill="url(#blob1)" />
-        <rect width="1440" height="900" fill="url(#blob2)" />
-        <rect width="1440" height="900" fill="url(#blob3)" />
-      </svg>
     </div>
 
     <div class="page-content">
       <div class="container">
 
-        <!-- HERO -->
         <section class="card hero fade-in-up">
           <div class="ghost-wrap">
-            <span class="ghost">👻</span>
+            <span class="ghost" aria-hidden="true">👻</span>
           </div>
-          <h1>GhostFollow</h1>
-          <p class="tagline">Toma el control absoluto de tu Instagram.</p>
+          <h1 style="font-size: 2.8rem;">Descubre quién te dejó de seguir en Instagram</h1>
+          <p class="tagline">Con GhostFollow, toma el control absoluto de tu perfil.</p>
           <p class="sub-tagline">
-            Descubre quién te dejó de seguir, quiénes son tus verdaderos fans
-            y analiza tu crecimiento con exactitud milimétrica.
+            Cruza tus datos oficiales de Meta al instante. Encuentra a los unfollowers, descubre quiénes son tus
+            verdaderos fans y analiza tu crecimiento con exactitud milimétrica sin riesgos de baneo.
           </p>
           <div class="hero-actions">
             <router-link to="/login" class="btn btn-primary">Entrar al Panel</router-link>
@@ -51,80 +40,66 @@
           </div>
         </section>
 
-        <!-- FEATURES -->
         <section class="features fade-in-up" style="--delay: 0.2s">
           <div class="feature-card">
-            <div class="feature-icon">💔</div>
-            <h3>Fans & Traidores</h3>
-            <p>Cruza datos al instante. Detecta quién no te devuelve el follow y quién te sigue fielmente.</p>
+            <div class="feature-icon" aria-hidden="true">💔</div>
+            <h3>Detecta los Unfollows</h3>
+            <p>Cruza datos al instante. Detecta exactamente qué cuentas de Instagram no te devuelven el follow.</p>
           </div>
           <div class="feature-card">
-            <div class="feature-icon">📈</div>
+            <div class="feature-icon" aria-hidden="true">📈</div>
             <h3>Historial Evolutivo</h3>
-            <p>Guarda tus reportes en la nube. Compara tu crecimiento real mes a mes sin perder datos.</p>
+            <p>Guarda tus reportes de seguidores en la nube. Compara tu crecimiento real mes a mes sin perder datos.</p>
           </div>
           <div class="feature-card">
-            <div class="feature-icon">🔔</div>
-            <h3>Alertas por Email</h3>
-            <p>Recibe notificaciones automáticas y resúmenes directos a tu correo al instante.</p>
+            <div class="feature-icon" aria-hidden="true">🔒</div>
+            <h3>100% Seguro y Privado</h3>
+            <p>No pedimos tu contraseña. Analizamos el archivo .zip oficial de Instagram para proteger tu cuenta.</p>
           </div>
         </section>
 
-        <!-- HOW IT WORKS -->
         <section class="card how-it-works fade-in-up" style="--delay: 0.3s">
-          <h2>Empieza en menos de 1 minuto</h2>
+          <h2>Cómo ver a tus unfollowers en 3 pasos</h2>
           <div class="hiw-grid">
             <div class="steps">
               <div class="step">
                 <span class="step-num">1</span>
                 <div class="step-body">
                   <h4>Regístrate sin tarjeta</h4>
-                  <p>Solo necesitas tu email y tu usuario de IG. Es 100% seguro.</p>
+                  <p>Solo necesitas tu email y tu usuario. Totalmente gratis para empezar.</p>
                 </div>
               </div>
               <div class="step">
                 <span class="step-num">2</span>
                 <div class="step-body">
-                  <h4>Sube tu archivo .zip</h4>
-                  <p>Descarga tus datos oficiales de Instagram y súbelos. <strong>Nosotros no pedimos tu contraseña de
-                      IG.</strong></p>
+                  <h4>Sube tu archivo oficial de Meta</h4>
+                  <p>Descarga tu historial de datos desde tu propia app de Instagram y súbelo. <strong>Tus credenciales
+                      nunca salen de tu dispositivo.</strong></p>
                 </div>
               </div>
               <div class="step">
                 <span class="step-num">3</span>
                 <div class="step-body">
-                  <h4>Desbloquea el panel</h4>
-                  <p>Accede a métricas que la app oficial te oculta. ¡Encuentra a los fantasmas!</p>
+                  <h4>Desbloquea tus métricas</h4>
+                  <p>Accede a la lista de "traidores" y mutuals que la app oficial te oculta. ¡Encuentra a los
+                    fantasmas!</p>
                 </div>
               </div>
             </div>
 
-            <div class="terminal">
-              <div class="terminal-bar">
-                <span class="tb-dot tb-red"></span>
-                <span class="tb-dot tb-yellow"></span>
-                <span class="tb-dot tb-green"></span>
-              </div>
-              <div class="terminal-body">
-                <p class="t-line"><span class="t-prompt">></span> Analizando followers.zip...</p>
-                <p class="t-line t-success"><span class="t-prompt">></span> 1,204 seguidores encontrados.</p>
-                <p class="t-line t-alert"><span class="t-prompt">></span> ¡Alerta! 3 usuarios te dejaron de seguir.</p>
-                <p class="t-line"><span class="t-prompt">></span> Generando reporte en el Dashboard...</p>
-                <p class="t-line t-success"><span class="t-prompt">></span> Listo.<span class="t-cursor"> █</span></p>
-              </div>
+            <div class="terminal" aria-hidden="true">
             </div>
           </div>
         </section>
 
         <footer class="footer fade-in-up" style="--delay: 0.4s">
-          <p>© {{ new Date().getFullYear() }} GhostFollow. Analíticas seguras y privadas.</p>
+          <p>© {{ new Date().getFullYear() }} GhostFollow. Analíticas seguras de seguidores para Instagram.</p>
         </footer>
 
       </div>
     </div>
   </div>
 </template>
-
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
