@@ -18,7 +18,29 @@ useHead({
 
 <template>
   <div class="page-root">
+
     <div class="bg-canvas" aria-hidden="true">
+      <svg class="bg-svg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice"
+        xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="blob1" cx="15%" cy="15%" r="55%">
+            <stop offset="0%" stop-color="#f9a8d4" stop-opacity="0.85" />
+            <stop offset="100%" stop-color="#fce4ec" stop-opacity="0" />
+          </radialGradient>
+          <radialGradient id="blob2" cx="88%" cy="88%" r="55%">
+            <stop offset="0%" stop-color="#fdf2f8" stop-opacity="0.9" />
+            <stop offset="100%" stop-color="#fce4ec" stop-opacity="0" />
+          </radialGradient>
+          <radialGradient id="blob3" cx="60%" cy="30%" r="35%">
+            <stop offset="0%" stop-color="#fbcfe8" stop-opacity="0.5" />
+            <stop offset="100%" stop-color="#fce4ec" stop-opacity="0" />
+          </radialGradient>
+        </defs>
+        <rect width="1440" height="900" fill="#fce4ec" />
+        <rect width="1440" height="900" fill="url(#blob1)" />
+        <rect width="1440" height="900" fill="url(#blob2)" />
+        <rect width="1440" height="900" fill="url(#blob3)" />
+      </svg>
     </div>
 
     <div class="page-content">
@@ -28,7 +50,7 @@ useHead({
           <div class="ghost-wrap">
             <span class="ghost" aria-hidden="true">👻</span>
           </div>
-          <h1 style="font-size: 2.8rem;">Descubre quién te dejó de seguir en Instagram</h1>
+          <h1>Descubre quién te dejó de seguir en Instagram</h1>
           <p class="tagline">Con GhostFollow, toma el control absoluto de tu perfil.</p>
           <p class="sub-tagline">
             Cruza tus datos oficiales de Meta al instante. Encuentra a los unfollowers, descubre quiénes son tus
@@ -88,7 +110,20 @@ useHead({
             </div>
 
             <div class="terminal" aria-hidden="true">
+              <div class="terminal-bar">
+                <span class="tb-dot tb-red"></span>
+                <span class="tb-dot tb-yellow"></span>
+                <span class="tb-dot tb-green"></span>
+              </div>
+              <div class="terminal-body">
+                <p class="t-line"><span class="t-prompt">></span> Analizando followers.zip...</p>
+                <p class="t-line t-success"><span class="t-prompt">></span> 1,204 seguidores encontrados.</p>
+                <p class="t-line t-alert"><span class="t-prompt">></span> ¡Alerta! 3 usuarios te dejaron de seguir.</p>
+                <p class="t-line"><span class="t-prompt">></span> Generando reporte en el Dashboard...</p>
+                <p class="t-line t-success"><span class="t-prompt">></span> Listo.<span class="t-cursor"> █</span></p>
+              </div>
             </div>
+
           </div>
         </section>
 
@@ -100,6 +135,7 @@ useHead({
     </div>
   </div>
 </template>
+
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
@@ -109,13 +145,14 @@ useHead({
   padding: 0;
 }
 
+/* ── CAMBIOS AQUÍ: min-height 100% y overflow-x hidden ── */
 .page-root {
   width: 100%;
-  min-height: 100vh;
+  min-height: 100%;
   font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
 }
 
-/* ── FONDO: SVG fijo, sin blur, sin filter ── */
 .bg-canvas {
   position: fixed;
   inset: 0;
@@ -129,15 +166,15 @@ useHead({
   display: block;
 }
 
-/* ── LAYOUT ── */
+/* ── CAMBIOS AQUÍ: min-height 100% y padding-bottom ajustado ── */
 .page-content {
   position: relative;
   z-index: 1;
-  min-height: 100vh;
+  min-height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 2rem 1rem;
+  padding: 2rem 1rem 4rem 1rem;
 }
 
 .container {
@@ -148,7 +185,6 @@ useHead({
   gap: 2rem;
 }
 
-/* ── ANIMACIONES: solo opacity + transform = cero repaint ── */
 .fade-in-up {
   animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: var(--delay, 0s);
@@ -166,9 +202,6 @@ useHead({
   }
 }
 
-/* ── CARD: sin backdrop-filter — mismo look con fondo opaco + sombra ──
-   El truco: fondo blanco con alta opacidad (0.88) sobre el SVG de colores
-   da visualmente el mismo resultado que glassmorphism, sin ningún coste.  */
 .card {
   background: rgba(255, 255, 255, 0.88);
   border-radius: 28px;
@@ -179,7 +212,6 @@ useHead({
     inset 0 1px 0 rgba(255, 255, 255, 1);
 }
 
-/* ── HERO ── */
 .hero {
   padding: 4rem 2rem;
   text-align: center;
@@ -193,7 +225,6 @@ useHead({
   font-size: 5rem;
   display: inline-block;
   will-change: transform;
-  /* eleva solo el fantasma a compositing layer */
   animation: float 3s ease-in-out infinite;
   filter: drop-shadow(0 10px 10px rgba(233, 30, 99, 0.2));
 }
@@ -211,7 +242,7 @@ useHead({
 }
 
 h1 {
-  font-size: 3.5rem;
+  font-size: 2.8rem;
   font-weight: 800;
   color: #831843;
   letter-spacing: -1.5px;
@@ -251,7 +282,6 @@ h1 {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  /* solo transform en hover → compositor, sin repaint */
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -278,7 +308,6 @@ h1 {
   border-color: #db2777;
 }
 
-/* ── FEATURES ── */
 .features {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -286,14 +315,12 @@ h1 {
 }
 
 .feature-card {
-  /* sin backdrop-filter: mismo truco de fondo semiopaco */
   background: rgba(255, 255, 255, 0.82);
   border: 1px solid rgba(255, 255, 255, 0.95);
   border-radius: 24px;
   padding: 2rem 1.5rem;
   text-align: center;
   box-shadow: 0 4px 16px -4px rgba(233, 30, 99, 0.08);
-  /* hover: solo transform → GPU, sin repaint */
   transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
@@ -327,7 +354,6 @@ h1 {
   line-height: 1.55;
 }
 
-/* ── HOW IT WORKS ── */
 .how-it-works {
   padding: 3rem;
 }
@@ -392,7 +418,6 @@ h1 {
   color: #be185d;
 }
 
-/* ── TERMINAL ── */
 .terminal {
   background: #1e293b;
   border-radius: 16px;
@@ -473,7 +498,6 @@ h1 {
   }
 }
 
-/* ── FOOTER ── */
 .footer {
   text-align: center;
   color: #9d174d;
@@ -482,11 +506,19 @@ h1 {
   font-weight: 500;
 }
 
-/* ── RESPONSIVE ── */
+/* 5. MEDIA QUERIES PARA MÓVIL ARREGLADAS Y AJUSTADAS */
 @media (max-width: 768px) {
+
+  /* ── NUEVO: Forzamos altura automática y espacio extra abajo para Safari/Chrome ── */
+  .page-content {
+    height: auto;
+    padding-bottom: 6rem;
+  }
+
   h1 {
-    font-size: 2.6rem;
+    font-size: 2rem;
     letter-spacing: -1px;
+    line-height: 1.2;
   }
 
   .tagline {
@@ -525,7 +557,6 @@ h1 {
   }
 }
 
-/* ── ACCESIBILIDAD ── */
 @media (prefers-reduced-motion: reduce) {
 
   .ghost,
